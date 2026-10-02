@@ -1,7 +1,11 @@
 <!doctype html><html lang="ko"><head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#14396d">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./app-icon.svg" type="image/svg+xml">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Travel Survival">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>일본 여행 생존 앱</title>
 <style>
@@ -32,7 +36,7 @@ header{position:sticky;top:0;z-index:30;background:var(--accent);color:#fff;padd
 .hmark{width:6px;height:30px;background:var(--signal);flex:none}
 .htitle{font-size:1.06rem;font-weight:800;letter-spacing:-.02em;line-height:1.2;flex:1;min-width:0}
 .htitle small{display:block;font-size:.68rem;font-weight:500;opacity:.78;margin-top:2px;letter-spacing:0}
-.hbtn{width:42px;height:42px;border-radius:3px;background:rgba(255,255,255,.14);color:#fff;font-size:1.15rem;display:grid;place-items:center;flex:none}
+.hbtn{width:42px;height:42px;border-radius:3px;background:rgba(255,255,255,.14);color:#fff;font-size:1.15rem;display:grid;place-items:center;flex:none;text-decoration:none}
 .hbtn:active{background:rgba(255,255,255,.3)}
 
 .wrap{max-width:820px;margin:0 auto;padding:0 14px}
@@ -157,6 +161,26 @@ html[data-theme="dark"] .navin button[aria-selected="true"]{color:var(--signal);
 .seg button{padding:9px 11px;font-size:.78rem;font-weight:700;color:var(--sub);min-width:46px}
 .seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
 
+
+/* ── v2 quick access + status */ 
+.offline-status{font-size:.68rem;font-weight:600;opacity:.9}
+.quick-block{margin:10px 0 14px}
+.quick-title{font-size:.76rem;font-weight:800;color:var(--sub);margin:0 0 7px}
+.quick-recent{display:grid;grid-template-columns:1fr;gap:6px}
+.quick-recent button{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:10px 12px;text-align:left}
+.quick-recent .local{display:block;font-size:.95rem;font-weight:750;line-height:1.35}
+.quick-recent .kr{display:block;font-size:.72rem;color:var(--sub);margin-top:2px}
+.scene-shortcuts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.scene-shortcuts button{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:10px 5px;font-size:.74rem;font-weight:750;line-height:1.25}
+.scene-shortcuts button span{display:block;font-size:1.15rem;margin-bottom:3px}
+.q .opts .optlocal{display:block;font-weight:800}
+.q .opts .optkr{display:block;font-size:.7rem;font-weight:600;color:var(--sub);margin-top:4px}
+.q .opts button:active .optkr{color:rgba(255,255,255,.82)}
+.verified{font-size:.72rem;color:var(--sub);margin:-2px 0 9px;padding-left:2px}
+.voice-test{border:1px solid var(--line);background:var(--panel);border-radius:3px;padding:9px 11px;font-size:.78rem;font-weight:800;white-space:nowrap}
+#toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:130;max-width:min(92vw,560px);background:var(--ink);color:var(--bg);padding:10px 13px;border-radius:3px;font-size:.78rem;font-weight:700;display:none;box-shadow:0 6px 24px rgba(0,0,0,.22)}
+#toast.on{display:block}
+
 @media(min-width:640px){
   .list{grid-template-columns:1fr 1fr}
   .q .opts{grid-template-columns:repeat(3,1fr)}
@@ -170,8 +194,9 @@ html[data-theme="dark"] .navin button[aria-selected="true"]{color:var(--signal);
 
 <header>
   <div class="hrow">
+    <a class="hbtn" href="./" aria-label="국가 선택으로 돌아가기">‹</a>
     <span class="hmark"></span>
-    <div class="htitle">일본 여행 생존 앱<small>일본어 ↔ 한국어 · 인터넷 없이 동작</small></div>
+    <div class="htitle">일본 여행 생존 앱<small id="offlineStatus" class="offline-status">오프라인 준비 중…</small></div>
     <button class="hbtn" onclick="openSheet()" aria-label="설정">⚙</button>
   </div>
 </header>
@@ -180,7 +205,7 @@ html[data-theme="dark"] .navin button[aria-selected="true"]{color:var(--signal);
 
 <nav><div class="navin" id="nav"></div></nav>
 
-<div id="board" onclick="if(event.target.id==='board')closeBoard()">
+<div id="board" role="dialog" aria-modal="true" aria-label="현지인에게 보여주는 전체 화면" tabindex="-1" onclick="if(event.target.id==='board')closeBoard()">
   <div class="bt">
     <button onclick="closeBoard()" aria-label="닫기">✕</button>
     <span class="sp"></span>
@@ -189,7 +214,7 @@ html[data-theme="dark"] .navin button[aria-selected="true"]{color:var(--signal);
     <button onclick="speak(BST.local)" aria-label="읽어주기">🔊</button>
   </div>
   <div class="mid">
-    <div id="bLocal" class="loc"></div>
+    <div id="bLocal" class="loc" lang="ja"></div>
     <div id="bKr"></div>
     <div id="bRom"></div>
   </div>
@@ -197,7 +222,7 @@ html[data-theme="dark"] .navin button[aria-selected="true"]{color:var(--signal);
   <div class="rep" id="bRep"></div>
 </div>
 
-<div id="sheet" onclick="if(event.target.id==='sheet')closeSheet()">
+<div id="sheet" role="dialog" aria-modal="true" aria-label="설정" tabindex="-1" onclick="if(event.target.id==='sheet')closeSheet()">
   <div class="sheetin">
     <div class="srow"><div class="lbl">화면<small>어두운 곳에서는 다크가 눈이 편해요</small></div>
       <div class="seg" id="segTheme"></div></div>
@@ -207,6 +232,8 @@ html[data-theme="dark"] .navin button[aria-selected="true"]{color:var(--signal);
       <div class="seg" id="segRom"></div></div>
     <div class="srow"><div class="lbl">읽어주는 속도<small>상대가 알아듣기 좋은 속도</small></div>
       <div class="seg" id="segRate"></div></div>
+    <div class="srow"><div class="lbl">음성 테스트<small>출국 전에 일본어 음성이 재생되는지 확인해요</small></div>
+      <button type="button" class="voice-test" onclick="testSpeech()">🔊 테스트</button></div>
     <div class="note" style="margin-top:14px">
       <b>개인정보 안내</b>
       이 앱은 이름·전화번호·숙소 주소 등 개인 식별 정보를 개발자 서버로 수집하거나 전송하도록 설계하지 않았습니다. 직접 입력한 내용도 앱에서 저장하지 않습니다.<br>
@@ -219,6 +246,7 @@ html[data-theme="dark"] .navin button[aria-selected="true"]{color:var(--signal);
     <button class="wide ghost" onclick="closeSheet()">닫기</button>
   </div>
 </div>
+<div id="toast" role="status" aria-live="polite"></div>
 
 <script>
 const PHRASES=[{"id":"basic_hello","cat":"기본","kr":"안녕하세요. 일본어를 조금만 할 수 있어요.","local":"こんにちは。日本語は少しだけ話せます。","roman":"곤니치와. 니혼고와 스코시다케 하나세마스."},{"id":"basic_korean","cat":"기본","kr":"저는 한국에서 왔습니다.","local":"韓国から来ました。","roman":"칸코쿠카라 키마시타."},{"id":"basic_slow","cat":"기본","kr":"천천히 말씀해 주세요.","local":"すみません、ゆっくり話してください。","roman":"스미마센, 윳쿠리 하나시테 쿠다사이."},{"id":"basic_again","cat":"기본","kr":"한 번만 더 말씀해 주세요.","local":"もう一度お願いします。","roman":"모- 이치도 오네가이시마스."},{"id":"basic_point","cat":"기본","kr":"여기에서 해당하는 걸 눌러 주세요.","local":"ここから当てはまるものを押してください。","roman":"코코카라 아테하마루 모노오 오시테 쿠다사이."},{"id":"basic_write","cat":"기본","kr":"여기에 적어 주세요.","local":"ここに書いてください。","roman":"코코니 카이테 쿠다사이."},{"id":"basic_english","cat":"기본","kr":"영어로 말해도 될까요?","local":"英語でも大丈夫ですか？","roman":"에이고데모 다이죠부데스카?"},{"id":"basic_translate","cat":"기본","kr":"번역 앱을 써도 될까요?","local":"翻訳アプリを使ってもいいですか？","roman":"혼야쿠 아푸리오 츠캇테모 이이데스카?"},{"id":"basic_photo_ok","cat":"기본","kr":"이 화면을 사진으로 찍어도 될까요?","local":"この画面を写真に撮ってもいいですか？","roman":"코노 가멘오 샤신니 톳테모 이이데스카?"},{"id":"basic_wait","cat":"기본","kr":"잠깐만 기다려 주세요.","local":"少し待ってください。","roman":"스코시 맛테 쿠다사이."},{"id":"basic_thanks","cat":"기본","kr":"정말 감사합니다.","local":"本当にありがとうございます。","roman":"혼토니 아리가토 고자이마스."},{"id":"basic_sorry","cat":"기본","kr":"죄송합니다.","local":"申し訳ありません。","roman":"모-시와케 아리마센."},{"id":"basic_ok","cat":"기본","kr":"네, 괜찮습니다.","local":"はい、大丈夫です。","roman":"하이, 다이죠부데스."},{"id":"basic_no","cat":"기본","kr":"아니요, 괜찮습니다.","local":"いいえ、結構です。","roman":"이이에, 켓코-데스."},{"id":"basic_understand","cat":"기본","kr":"이해했습니다.","local":"わかりました。","roman":"와카리마시타."},{"id":"basic_notunderstand","cat":"기본","kr":"잘 모르겠습니다.","local":"よくわかりません。","roman":"요쿠 와카리마센."},{"id":"air_gate","cat":"공항","kr":"탑승구가 어디예요?","local":"搭乗口はどこですか？","roman":"토-죠-구치와 도코데스카?"},{"id":"air_counter","cat":"공항","kr":"체크인 카운터가 어디예요?","local":"チェックインカウンターはどこですか？","roman":"쳇쿠인 카운타-와 도코데스카?"},{"id":"air_baggage","cat":"공항","kr":"위탁 수하물은 어디서 부치나요?","local":"預け荷物はどこで預けますか？","roman":"아즈케 니모츠와 도코데 아즈케마스카?"},{"id":"air_overweight","cat":"공항","kr":"무게가 초과됐나요?","local":"重量オーバーですか？","roman":"쥬-료- 오-바-데스카?"},{"id":"air_delay","cat":"공항","kr":"이 항공편이 지연됐나요?","local":"この便は遅れていますか？","roman":"코노 빈와 오쿠레테이마스카?"},{"id":"air_transfer","cat":"공항","kr":"환승은 어디로 가야 하나요?","local":"乗り継ぎはどこへ行けばいいですか？","roman":"노리츠기와 도코에 이케바 이이데스카?"},{"id":"air_claim","cat":"공항","kr":"수하물 찾는 곳이 어디예요?","local":"手荷物受取所はどこですか？","roman":"테니모츠 우케토리쇼와 도코데스카?"},{"id":"air_lostbag","cat":"공항","kr":"제 짐이 나오지 않았어요.","local":"荷物が出てきませんでした。","roman":"니모츠가 데테키마센데시타."},{"id":"air_battery","cat":"공항","kr":"보조배터리는 기내에 들고 타야 하나요?","local":"モバイルバッテリーは機内持ち込みですか？","roman":"모바이루 밧테리-와 키나이 모치코미데스카?"},{"id":"air_train","cat":"공항","kr":"시내로 가는 열차는 어디서 타나요?","local":"市内へ行く電車はどこで乗りますか？","roman":"시나이에 이쿠 덴샤와 도코데 노리마스카?"},{"id":"imm_tourism","cat":"입국","kr":"관광 목적으로 왔습니다.","local":"観光で来ました。","roman":"칸코-데 키마시타."},{"id":"imm_days","cat":"입국","kr":"이 날짜까지 머물 예정입니다.","local":"この日まで滞在する予定です。","roman":"코노 히마데 타이자이스루 요테이데스."},{"id":"imm_hotel","cat":"입국","kr":"숙소는 여기입니다.","local":"宿泊先はここです。","roman":"슈쿠하쿠사키와 코코데스."},{"id":"imm_return","cat":"입국","kr":"돌아가는 항공권은 여기 있습니다.","local":"帰りの航空券はこれです。","roman":"카에리노 코-쿠-켄와 코레데스."},{"id":"imm_alone","cat":"입국","kr":"혼자 왔습니다.","local":"一人で来ました。","roman":"히토리데 키마시타."},{"id":"imm_family","cat":"입국","kr":"가족과 함께 왔습니다.","local":"家族と一緒に来ました。","roman":"카조쿠토 잇쇼니 키마시타."},{"id":"imm_nothing","cat":"입국","kr":"신고할 물품은 없습니다.","local":"申告するものはありません。","roman":"신코쿠스루 모노와 아리마센."},{"id":"hotel_checkin","cat":"호텔","kr":"체크인하러 왔습니다.","local":"チェックインをお願いします。","roman":"쳇쿠인오 오네가이시마스."},{"id":"hotel_reserved","cat":"호텔","kr":"이 이름으로 예약했습니다.","local":"この名前で予約しています。","roman":"코노 나마에데 요야쿠시테이마스."},{"id":"hotel_early","cat":"호텔","kr":"얼리 체크인이 가능한가요?","local":"アーリーチェックインはできますか？","roman":"아-리- 쳇쿠인와 데키마스카?"},{"id":"hotel_luggage","cat":"호텔","kr":"짐을 맡길 수 있을까요?","local":"荷物を預かっていただけますか？","roman":"니모츠오 아즈캇테 이타다케마스카?"},{"id":"hotel_room","cat":"호텔","kr":"방 번호가 몇 번인가요?","local":"部屋番号は何番ですか？","roman":"헤야 방고-와 난반데스카?"},{"id":"hotel_key","cat":"호텔","kr":"카드키가 작동하지 않아요.","local":"カードキーが使えません。","roman":"카-도키-가 츠카에마센."},{"id":"hotel_wifi","cat":"호텔","kr":"와이파이 비밀번호를 알려 주세요.","local":"Wi-Fiのパスワードを教えてください。","roman":"와이파이노 파스와-도오 오시에테 쿠다사이."},{"id":"hotel_clean","cat":"호텔","kr":"오늘 방 청소는 필요 없습니다.","local":"今日は部屋の清掃は不要です。","roman":"쿄-와 헤야노 세이소-와 후요-데스."},{"id":"hotel_towel","cat":"호텔","kr":"수건을 한 장 더 주실 수 있나요?","local":"タオルをもう一枚いただけますか？","roman":"타오루오 모- 이치마이 이타다케마스카?"},{"id":"hotel_hot","cat":"호텔","kr":"방이 너무 더워요.","local":"部屋が暑すぎます。","roman":"헤야가 아츠스기마스."},{"id":"hotel_cold","cat":"호텔","kr":"방이 너무 추워요.","local":"部屋が寒すぎます。","roman":"헤야가 사무스기마스."},{"id":"hotel_noise","cat":"호텔","kr":"옆방이 너무 시끄러워요.","local":"隣の部屋がうるさいです。","roman":"토나리노 헤야가 우루사이데스."},{"id":"hotel_broken","cat":"호텔","kr":"이게 고장 난 것 같아요.","local":"これが壊れているようです。","roman":"코레가 코와레테이루 요-데스."},{"id":"hotel_change","cat":"호텔","kr":"방을 바꿔 주실 수 있나요?","local":"部屋を変えていただけますか？","roman":"헤야오 카에테 이타다케마스카?"},{"id":"hotel_breakfast","cat":"호텔","kr":"조식은 몇 시부터인가요?","local":"朝食は何時からですか？","roman":"쵸-쇼쿠와 난지카라데스카?"},{"id":"hotel_late","cat":"호텔","kr":"늦게 체크아웃할 수 있나요?","local":"レイトチェックアウトはできますか？","roman":"레이토 쳇쿠아우토와 데키마스카?"},{"id":"hotel_checkout","cat":"호텔","kr":"체크아웃 부탁드립니다.","local":"チェックアウトをお願いします。","roman":"쳇쿠아우토오 오네가이시마스."},{"id":"hotel_taxi","cat":"호텔","kr":"택시를 불러 주실 수 있나요?","local":"タクシーを呼んでいただけますか？","roman":"타쿠시-오 욘데 이타다케마스카?"},{"id":"tr_station","cat":"교통","kr":"가장 가까운 역이 어디예요?","local":"一番近い駅はどこですか？","roman":"이치반 치카이 에키와 도코데스카?"},{"id":"tr_platform","cat":"교통","kr":"몇 번 승강장인가요?","local":"何番ホームですか？","roman":"난반 호-무데스카?"},{"id":"tr_exit","cat":"교통","kr":"몇 번 출구로 나가야 하나요?","local":"何番出口から出ればいいですか？","roman":"난반 데구치카라 데레바 이이데스카?"},{"id":"tr_thistrain","cat":"교통","kr":"이 열차가 여기로 가나요?","local":"この電車はここに行きますか？","roman":"코노 덴샤와 코코니 이키마스카?"},{"id":"tr_transfer","cat":"교통","kr":"어디에서 갈아타나요?","local":"どこで乗り換えますか？","roman":"도코데 노리카에마스카?"},{"id":"tr_express","cat":"교통","kr":"이건 급행인가요, 각역정차인가요?","local":"これは急行ですか、各駅停車ですか？","roman":"코레와 큐-코-데스카, 카쿠에키 테이샤데스카?"},{"id":"tr_reserved","cat":"교통","kr":"지정석인가요?","local":"指定席ですか？","roman":"시테이세키데스카?"},{"id":"tr_ticket","cat":"교통","kr":"이 표를 어떻게 쓰나요?","local":"この切符はどう使いますか？","roman":"코노 킷푸와 도- 츠카이마스카?"},{"id":"tr_iccard","cat":"교통","kr":"교통카드를 충전하고 싶어요.","local":"ICカードをチャージしたいです。","roman":"아이시-카-도오 챠-지시타이데스."},{"id":"tr_lasttrain","cat":"교통","kr":"막차가 몇 시예요?","local":"終電は何時ですか？","roman":"슈-덴와 난지데스카?"},{"id":"tr_locker","cat":"교통","kr":"코인 로커가 어디예요?","local":"コインロッカーはどこですか？","roman":"코인 롯카-와 도코데스카?"},{"id":"tr_bus","cat":"교통","kr":"이 버스가 여기로 가나요?","local":"このバスはここに行きますか？","roman":"코노 바스와 코코니 이키마스카?"},{"id":"tr_busfare","cat":"교통","kr":"버스 요금은 어떻게 내나요?","local":"バスの運賃はどうやって払いますか？","roman":"바스노 운친와 도-얏테 하라이마스카?"},{"id":"tr_getoff","cat":"교통","kr":"여기서 내리는 게 맞나요?","local":"ここで降りればいいですか？","roman":"코코데 오리레바 이이데스카?"},{"id":"tr_wrongway","cat":"교통","kr":"반대 방향으로 온 것 같아요.","local":"逆方向に乗ってしまったようです。","roman":"갸쿠호-코-니 놋테시맛타 요-데스."},{"id":"taxi_address","cat":"택시","kr":"이 주소로 가 주세요.","local":"この住所までお願いします。","roman":"코노 주-쇼마데 오네가이시마스."},{"id":"taxi_map","cat":"택시","kr":"이 지도의 위치로 가 주세요.","local":"この地図の場所までお願いします。","roman":"코노 치즈노 바쇼마데 오네가이시마스."},{"id":"taxi_stop","cat":"택시","kr":"여기서 세워 주세요.","local":"ここで止めてください。","roman":"코코데 토메테 쿠다사이."},{"id":"taxi_time","cat":"택시","kr":"여기까지 얼마나 걸리나요?","local":"ここまでどのくらいかかりますか？","roman":"코코마데 도노쿠라이 카카리마스카?"},{"id":"taxi_fare","cat":"택시","kr":"요금이 대략 얼마인가요?","local":"料金はだいたいいくらですか？","roman":"료-킨와 다이타이 이쿠라데스카?"},{"id":"taxi_card","cat":"택시","kr":"카드로 결제할 수 있나요?","local":"カードで払えますか？","roman":"카-도데 하라에마스카?"},{"id":"taxi_trunk","cat":"택시","kr":"트렁크를 열어 주세요.","local":"トランクを開けてください。","roman":"토랑쿠오 아케테 쿠다사이."},{"id":"taxi_hurry","cat":"택시","kr":"조금 서둘러 주실 수 있나요?","local":"少し急いでいただけますか？","roman":"스코시 이소이데 이타다케마스카?"},{"id":"eat_howmany","cat":"식당","kr":"인원은 이 숫자입니다.","local":"人数はこの数字です。","roman":"닌즈-와 코노 스-지데스."},{"id":"eat_wait","cat":"식당","kr":"얼마나 기다려야 하나요?","local":"どのくらい待ちますか？","roman":"도노쿠라이 마치마스카?"},{"id":"eat_reserve","cat":"식당","kr":"예약이 필요한가요?","local":"予約は必要ですか？","roman":"요야쿠와 히츠요-데스카?"},{"id":"eat_menu","cat":"식당","kr":"메뉴판을 보여 주세요.","local":"メニューを見せてください。","roman":"메뉴-오 미세테 쿠다사이."},{"id":"eat_menu_en","cat":"식당","kr":"한국어나 영어 메뉴가 있나요?","local":"韓国語か英語のメニューはありますか？","roman":"칸코쿠고카 에이고노 메뉴-와 아리마스카?"},{"id":"eat_recommend","cat":"식당","kr":"추천 메뉴가 뭐예요?","local":"おすすめは何ですか？","roman":"오스스메와 난데스카?"},{"id":"eat_this","cat":"식당","kr":"이걸로 주세요.","local":"これをください。","roman":"코레오 쿠다사이."},{"id":"eat_same","cat":"식당","kr":"저 사람과 같은 걸로 주세요.","local":"あの人と同じものをください。","roman":"아노 히토토 오나지 모노오 쿠다사이."},{"id":"eat_nospicy","cat":"식당","kr":"맵지 않게 해 주세요.","local":"辛くしないでください。","roman":"카라쿠 시나이데 쿠다사이."},{"id":"eat_nowasabi","cat":"식당","kr":"고추냉이는 빼 주세요.","local":"わさび抜きでお願いします。","roman":"와사비 누키데 오네가이시마스."},{"id":"eat_noraw","cat":"식당","kr":"날것은 먹지 못합니다.","local":"生ものは食べられません。","roman":"나마모노와 타베라레마센."},{"id":"eat_noseafood","cat":"식당","kr":"해산물은 먹지 못합니다.","local":"魚介類は食べられません。","roman":"교카이루이와 타베라레마센."},{"id":"eat_nopork","cat":"식당","kr":"돼지고기는 먹지 못합니다.","local":"豚肉は食べられません。","roman":"부타니쿠와 타베라레마센."},{"id":"eat_less_oil","cat":"식당","kr":"기름을 적게 사용해 주세요.","local":"油を少なめにしてください。","roman":"아부라오 스쿠나메니 시테 쿠다사이."},{"id":"eat_nobeef","cat":"식당","kr":"소고기는 먹지 않습니다.","local":"牛肉は食べません。","roman":"규-니쿠와 타베마센."},{"id":"eat_vegetarian","cat":"식당","kr":"고기 없이 가능한 메뉴가 있나요?","local":"肉なしで食べられるメニューはありますか？","roman":"니쿠 나시데 타베라레루 메뉴-와 아리마스카?"},{"id":"eat_nopeanut","cat":"식당","kr":"땅콩은 빼 주세요.","local":"ピーナッツは入れないでください。","roman":"피-낫츠와 이레나이데 쿠다사이."},{"id":"eat_noegg","cat":"식당","kr":"달걀은 빼 주세요.","local":"卵は入れないでください。","roman":"타마고와 이레나이데 쿠다사이."},{"id":"eat_nodairy","cat":"식당","kr":"우유나 유제품은 빼 주세요.","local":"牛乳や乳製品は入れないでください。","roman":"규-뉴-야 뉴-세이힌와 이레나이데 쿠다사이."},{"id":"eat_allergen","cat":"식당","kr":"이 음식에 알레르기 유발 재료가 들어 있나요?","local":"この料理にアレルギーの原因になる食材は入っていますか？","roman":"코노 료-리니 아레루기-노 겐인니 나루 쇼쿠자이와 하잇테이마스카?"},{"id":"eat_ingredient","cat":"식당","kr":"이 재료를 빼 주세요.","local":"この材料は抜いてください。","roman":"코노 자이료-와 누이테 쿠다사이."},{"id":"eat_water","cat":"식당","kr":"물 주세요.","local":"お水をお願いします。","roman":"오미즈오 오네가이시마스."},{"id":"eat_refill","cat":"식당","kr":"한 그릇 더 주세요.","local":"おかわりをお願いします。","roman":"오카와리오 오네가이시마스."},{"id":"eat_share","cat":"식당","kr":"나눠 먹어도 되나요?","local":"シェアしてもいいですか？","roman":"셰아시테모 이이데스카?"},{"id":"eat_howeat","cat":"식당","kr":"이건 어떻게 먹나요?","local":"これはどうやって食べますか？","roman":"코레와 도-얏테 타베마스카?"},{"id":"eat_notorder","cat":"식당","kr":"이건 주문하지 않았어요.","local":"これは注文していません。","roman":"코레와 츄-몬시테이마센."},{"id":"eat_slow","cat":"식당","kr":"주문한 게 아직 안 나왔어요.","local":"注文したものがまだ来ていません。","roman":"츄-몬시타 모노가 마다 키테이마센."},{"id":"eat_bill","cat":"식당","kr":"계산 부탁드려요.","local":"お会計をお願いします。","roman":"오카이케이오 오네가이시마스."},{"id":"eat_split","cat":"식당","kr":"따로 계산할 수 있나요?","local":"別々に払えますか？","roman":"베츠베츠니 하라에마스카?"},{"id":"eat_takeout","cat":"식당","kr":"포장해 주세요.","local":"持ち帰りでお願いします。","roman":"모치카에리데 오네가이시마스."},{"id":"eat_delicious","cat":"식당","kr":"정말 맛있었습니다.","local":"とても美味しかったです。","roman":"토테모 오이시캇타데스."},{"id":"cafe_here","cat":"카페","kr":"여기서 마실게요.","local":"店内でお願いします。","roman":"텐나이데 오네가이시마스."},{"id":"cafe_togo","cat":"카페","kr":"가지고 갈게요.","local":"持ち帰りでお願いします。","roman":"모치카에리데 오네가이시마스."},{"id":"cafe_ice","cat":"카페","kr":"아이스로 주세요.","local":"アイスでお願いします。","roman":"아이스데 오네가이시마스."},{"id":"cafe_hot","cat":"카페","kr":"따뜻한 걸로 주세요.","local":"ホットでお願いします。","roman":"홋토데 오네가이시마스."},{"id":"cafe_less_sweet","cat":"카페","kr":"덜 달게 해 주세요.","local":"甘さを控えめにしてください。","roman":"아마사오 히카에메니 시테 쿠다사이."},{"id":"cafe_outlet","cat":"카페","kr":"콘센트를 써도 되나요?","local":"コンセントを使ってもいいですか？","roman":"콘센토오 츠캇테모 이이데스카?"},{"id":"cafe_seat","cat":"카페","kr":"이 자리에 앉아도 되나요?","local":"この席に座ってもいいですか？","roman":"코노 세키니 스왓테모 이이데스카?"},{"id":"bar_beer","cat":"술집","kr":"생맥주 주세요.","local":"生ビールをください。","roman":"나마 비-루오 쿠다사이."},{"id":"bar_sake","cat":"술집","kr":"이 지역 술을 추천해 주세요.","local":"この地域のお酒をおすすめしてください。","roman":"코노 치이키노 오사케오 오스스메시테 쿠다사이."},{"id":"bar_charge","cat":"술집","kr":"자릿세가 있나요?","local":"お通し代や席料はかかりますか？","roman":"오토시다이야 세키료와 카카리마스카?"},{"id":"bar_lastorder","cat":"술집","kr":"라스트 오더가 몇 시예요?","local":"ラストオーダーは何時ですか？","roman":"라스토 오-다-와 난지데스카?"},{"id":"bar_nodrink","cat":"술집","kr":"술은 못 마셔요.","local":"お酒は飲めません。","roman":"오사케와 노메마센."},{"id":"bar_water","cat":"술집","kr":"물 한 잔 주세요.","local":"お水を一杯ください。","roman":"오미즈오 잇파이 쿠다사이."},{"id":"cvs_heat","cat":"편의점","kr":"이거 데워 주세요.","local":"これを温めてください。","roman":"코레오 아타타메테 쿠다사이."},{"id":"cvs_bag","cat":"편의점","kr":"봉투 주세요.","local":"袋をください。","roman":"후쿠로오 쿠다사이."},{"id":"cvs_nobag","cat":"편의점","kr":"봉투는 괜찮아요.","local":"袋はいりません。","roman":"후쿠로와 이리마센."},{"id":"cvs_chopstick","cat":"편의점","kr":"젓가락을 넣어 주세요.","local":"お箸を入れてください。","roman":"오하시오 이레테 쿠다사이."},{"id":"cvs_separate","cat":"편의점","kr":"따로 담아 주세요.","local":"別々に入れてください。","roman":"베츠베츠니 이레테 쿠다사이."},{"id":"cvs_atm","cat":"편의점","kr":"ATM이 어디에 있나요?","local":"ATMはどこにありますか？","roman":"에이티-에무와 도코니 아리마스카?"},{"id":"cvs_ticket","cat":"편의점","kr":"여기서 티켓을 발권할 수 있나요?","local":"ここでチケットを発券できますか？","roman":"코코데 치켓토오 핫켄데키마스카?"},{"id":"shop_looking","cat":"쇼핑","kr":"그냥 구경하는 중이에요.","local":"見ているだけです。","roman":"미테이루 다케데스."},{"id":"shop_size","cat":"쇼핑","kr":"다른 사이즈가 있나요?","local":"別のサイズはありますか？","roman":"베츠노 사이즈와 아리마스카?"},{"id":"shop_color","cat":"쇼핑","kr":"다른 색도 있나요?","local":"別の色もありますか？","roman":"베츠노 이로모 아리마스카?"},{"id":"shop_stock","cat":"쇼핑","kr":"재고가 있나요?","local":"在庫はありますか？","roman":"자이코와 아리마스카?"},{"id":"shop_try","cat":"쇼핑","kr":"입어봐도 되나요?","local":"試着してもいいですか？","roman":"시챠쿠시테모 이이데스카?"},{"id":"shop_price","cat":"쇼핑","kr":"이건 얼마예요?","local":"これはいくらですか？","roman":"코레와 이쿠라데스카?"},{"id":"shop_taxfree","cat":"쇼핑","kr":"면세가 가능한가요?","local":"免税できますか？","roman":"멘제이 데키마스카?"},{"id":"shop_passport","cat":"쇼핑","kr":"여권이 필요한가요?","local":"パスポートは必要ですか？","roman":"파스포-토와 히츠요-데스카?"},{"id":"shop_wrap","cat":"쇼핑","kr":"선물 포장 가능한가요?","local":"プレゼント包装できますか？","roman":"푸레젠토 호-소- 데키마스카?"},{"id":"shop_return","cat":"쇼핑","kr":"교환이나 환불이 가능한가요?","local":"交換や返品はできますか？","roman":"코-칸야 헨핀와 데키마스카?"},{"id":"shop_ship","cat":"쇼핑","kr":"호텔로 배송해 주실 수 있나요?","local":"ホテルまで配送していただけますか？","roman":"호테루마데 하이소-시테 이타다케마스카?"},{"id":"shop_hold","cat":"쇼핑","kr":"잠깐 맡아 주실 수 있나요?","local":"少し預かっていただけますか？","roman":"스코시 아즈캇테 이타다케마스카?"},{"id":"pay_card","cat":"결제","kr":"카드로 결제할 수 있나요?","local":"カードで払えますか？","roman":"카-도데 하라에마스카?"},{"id":"pay_cash","cat":"결제","kr":"현금만 되나요?","local":"現金だけですか？","roman":"겐킨다케 데스카?"},{"id":"pay_qr","cat":"결제","kr":"QR 결제도 되나요?","local":"QR決済も使えますか？","roman":"큐-아-루 켓사이모 츠카에마스카?"},{"id":"pay_ic","cat":"결제","kr":"교통카드로 결제할 수 있나요?","local":"交通系ICで払えますか？","roman":"코-츠-케이 아이시-데 하라에마스카?"},{"id":"pay_receipt","cat":"결제","kr":"영수증 주세요.","local":"レシートをください。","roman":"레시-토오 쿠다사이."},{"id":"pay_wrong","cat":"결제","kr":"금액이 잘못된 것 같아요.","local":"金額が違うようです。","roman":"킨가쿠가 치가우 요-데스."},{"id":"pay_change","cat":"결제","kr":"거스름돈이 부족한 것 같아요.","local":"おつりが足りないようです。","roman":"오츠리가 타리나이 요-데스."},{"id":"pay_split_pay","cat":"결제","kr":"반반씩 나눠서 결제할 수 있나요?","local":"半分ずつ払えますか？","roman":"한분즈츠 하라에마스카?"},{"id":"see_ticket","cat":"관광","kr":"표는 어디에서 사나요?","local":"チケットはどこで買えますか？","roman":"치켓토와 도코데 카에마스카?"},{"id":"see_open","cat":"관광","kr":"몇 시까지 열려 있나요?","local":"何時まで開いていますか？","roman":"난지마데 아이테이마스카?"},{"id":"see_closed","cat":"관광","kr":"오늘 쉬는 날인가요?","local":"今日は休みですか？","roman":"쿄-와 야스미데스카?"},{"id":"see_line","cat":"관광","kr":"줄은 어디에서 서나요?","local":"列はどこに並びますか？","roman":"레츠와 도코니 나라비마스카?"},{"id":"see_photo","cat":"관광","kr":"사진 찍어도 되나요?","local":"写真を撮ってもいいですか？","roman":"샤신오 톳테모 이이데스카?"},{"id":"see_shoes","cat":"관광","kr":"신발을 벗어야 하나요?","local":"靴を脱ぐ必要がありますか？","roman":"쿠츠오 누구 히츠요-가 아리마스카?"},{"id":"see_guide","cat":"관광","kr":"한국어 안내가 있나요?","local":"韓国語の案内はありますか？","roman":"칸코쿠고노 안나이와 아리마스카?"},{"id":"see_where","cat":"관광","kr":"여기가 어디인가요?","local":"ここはどこですか？","roman":"코코와 도코데스카?"},{"id":"see_howlong","cat":"관광","kr":"걸어서 갈 수 있나요?","local":"歩いて行けますか？","roman":"아루이테 이케마스카?"},{"id":"pic_me","cat":"사진","kr":"제 사진 한 장만 찍어주실 수 있나요?","local":"写真を一枚撮っていただけますか？","roman":"샤신오 이치마이 톳테 이타다케마스카?"},{"id":"pic_button","cat":"사진","kr":"이 버튼만 눌러 주시면 됩니다.","local":"このボタンを押すだけです。","roman":"코노 보탄오 오스다케데스."},{"id":"pic_background","cat":"사진","kr":"저 건물이 나오게 찍어 주세요.","local":"あの建物が入るように撮ってください。","roman":"아노 타테모노가 하이루 요-니 톳테 쿠다사이."},{"id":"pic_again","cat":"사진","kr":"한 장만 더 부탁드려요.","local":"もう一枚お願いします。","roman":"모- 이치마이 오네가이시마스."},{"id":"pic_together","cat":"사진","kr":"같이 찍어도 될까요?","local":"一緒に撮ってもいいですか？","roman":"잇쇼니 톳테모 이이데스카?"},{"id":"spa_first","cat":"온천","kr":"처음이라 이용 방법을 모르겠어요.","local":"初めてなので使い方がわかりません。","roman":"하지메테나노데 츠카이카타가 와카리마센."},{"id":"spa_tattoo","cat":"온천","kr":"문신이 있어도 들어갈 수 있나요?","local":"タトゥーがあっても入れますか？","roman":"타투-가 앗테모 하이레마스카?"},{"id":"spa_towel","cat":"온천","kr":"수건은 어디서 받나요?","local":"タオルはどこでもらえますか？","roman":"타오루와 도코데 모라에마스카?"},{"id":"spa_locker","cat":"온천","kr":"이 사물함을 써도 되나요?","local":"このロッカーを使ってもいいですか？","roman":"코노 롯카-오 츠캇테모 이이데스카?"},{"id":"spa_time","cat":"온천","kr":"이용 시간이 얼마나 되나요?","local":"利用時間はどのくらいですか？","roman":"리요- 지칸와 도노쿠라이데스카?"},{"id":"med_hospital","cat":"병원·약국","kr":"병원이 어디예요?","local":"病院はどこですか？","roman":"뵤-인와 도코데스카?"},{"id":"med_pharmacy","cat":"병원·약국","kr":"약국이 어디예요?","local":"薬局はどこですか？","roman":"얏쿄쿠와 도코데스카?"},{"id":"med_pain","cat":"병원·약국","kr":"여기가 아픕니다.","local":"ここが痛いです。","roman":"코코가 이타이데스."},{"id":"med_fever","cat":"병원·약국","kr":"열이 납니다.","local":"熱があります。","roman":"네츠가 아리마스."},{"id":"med_cold","cat":"병원·약국","kr":"감기 기운이 있습니다.","local":"風邪気味です。","roman":"카제기미데스."},{"id":"med_stomach","cat":"병원·약국","kr":"배가 아픕니다.","local":"お腹が痛いです。","roman":"오나카가 이타이데스."},{"id":"med_headache","cat":"병원·약국","kr":"머리가 아픕니다.","local":"頭が痛いです。","roman":"아타마가 이타이데스."},{"id":"med_medicine","cat":"병원·약국","kr":"이 증상에 맞는 약이 있나요?","local":"この症状に合う薬はありますか？","roman":"코노 쇼조니 아우 쿠스리와 아리마스카?"},{"id":"med_allergy","cat":"병원·약국","kr":"알레르기가 있습니다.","local":"アレルギーがあります。","roman":"아레루기-가 아리마스."},{"id":"med_insurance","cat":"병원·약국","kr":"여행자 보험이 있습니다.","local":"旅行保険に入っています。","roman":"료코- 호켄니 하잇테이마스."},{"id":"med_korean","cat":"병원·약국","kr":"한국어가 되는 분이 계신가요?","local":"韓国語が話せる方はいますか？","roman":"칸코쿠고가 하나세루 카타와 이마스카?"},{"id":"med_ambulance","cat":"병원·약국","kr":"구급차를 불러 주세요.","local":"救急車を呼んでください。","roman":"큐-큐-샤오 욘데 쿠다사이."},{"id":"net_sim","cat":"통신·환전","kr":"유심을 사고 싶어요.","local":"SIMカードを買いたいです。","roman":"심 카-도오 카이타이데스."},{"id":"net_setup","cat":"통신·환전","kr":"설정을 도와주실 수 있나요?","local":"設定を手伝っていただけますか？","roman":"셋테이오 테츠닷테 이타다케마스카?"},{"id":"net_wifi","cat":"통신·환전","kr":"무료 와이파이가 있나요?","local":"無料Wi-Fiはありますか？","roman":"무료- 와이파이와 아리마스카?"},{"id":"net_exchange","cat":"통신·환전","kr":"환전을 하고 싶습니다.","local":"両替をしたいです。","roman":"료-가에오 시타이데스."},{"id":"net_rate","cat":"통신·환전","kr":"환율이 어떻게 되나요?","local":"レートはいくらですか？","roman":"레-토와 이쿠라데스카?"},{"id":"net_smallbill","cat":"통신·환전","kr":"잔돈으로 바꿔 주세요.","local":"細かいお金に両替してください。","roman":"코마카이 오카네니 료가에시테 쿠다사이."},{"id":"net_atm","cat":"통신·환전","kr":"해외 카드가 되는 ATM이 어디예요?","local":"海外カードが使えるATMはどこですか？","roman":"카이가이 카-도가 츠카에루 에이티-에무와 도코데스카?"},{"id":"bag_coin","cat":"짐·세탁","kr":"코인 세탁실이 어디예요?","local":"コインランドリーはどこですか？","roman":"코인 란도리-와 도코데스카?"},{"id":"bag_how","cat":"짐·세탁","kr":"이 기계 사용법을 알려 주세요.","local":"この機械の使い方を教えてください。","roman":"코노 키카이노 츠카이카타오 오시에테 쿠다사이."},{"id":"bag_delivery","cat":"짐·세탁","kr":"이 짐을 다음 숙소로 보낼 수 있나요?","local":"この荷物を次の宿に送れますか？","roman":"코노 니모츠오 츠기노 야도니 오쿠레마스카?"},{"id":"bag_when","cat":"짐·세탁","kr":"언제 도착하나요?","local":"いつ届きますか？","roman":"이츠 토도키마스카?"},{"id":"kid_seat","cat":"아이·동반","kr":"아이 의자가 있나요?","local":"子供用の椅子はありますか？","roman":"코도모요-노 이스와 아리마스카?"},{"id":"kid_stroller","cat":"아이·동반","kr":"유모차를 가지고 들어가도 되나요?","local":"ベビーカーで入っても大丈夫ですか？","roman":"베비-카-데 하잇테모 다이죠부데스카?"},{"id":"kid_nursing","cat":"아이·동반","kr":"수유실이 어디예요?","local":"授乳室はどこですか？","roman":"쥬뉴-시츠와 도코데스카?"},{"id":"kid_elevator","cat":"아이·동반","kr":"엘리베이터가 어디예요?","local":"エレベーターはどこですか？","roman":"에레베-타-와 도코데스카?"},{"id":"grp_meeting","cat":"집결","kr":"집결 장소가 어디예요?","local":"集合場所はどこですか？","roman":"슈-고- 바쇼와 도코데스카?"},{"id":"grp_time","cat":"집결","kr":"몇 시까지 돌아오면 되나요?","local":"何時までに戻ればいいですか？","roman":"난지마데니 모도레바 이이데스카?"},{"id":"grp_late","cat":"집결","kr":"죄송합니다. 조금 늦을 것 같아요.","local":"すみません、少し遅れそうです。","roman":"스미마센, 스코시 오쿠레소-데스."},{"id":"grp_bus","cat":"집결","kr":"우리 버스가 어느 것인가요?","local":"私たちのバスはどれですか？","roman":"와타시타치노 바스와 도레데스카?"},{"id":"grp_contact","cat":"집결","kr":"연락처를 알려 주세요.","local":"連絡先を教えてください。","roman":"렌라쿠사키오 오시에테 쿠다사이."},{"id":"util_toilet","cat":"편의","kr":"화장실이 어디예요?","local":"トイレはどこですか？","roman":"토이레와 도코데스카?"},{"id":"util_charge","cat":"편의","kr":"휴대폰 충전할 곳이 있나요?","local":"スマホを充電できる場所はありますか？","roman":"스마호오 쥬-덴데키루 바쇼와 아리마스카?"},{"id":"util_smoke","cat":"편의","kr":"흡연 구역이 어디예요?","local":"喫煙所はどこですか？","roman":"키츠엔죠와 도코데스카?"},{"id":"util_trash","cat":"편의","kr":"쓰레기통이 어디예요?","local":"ゴミ箱はどこですか？","roman":"고미바코와 도코데스카?"},{"id":"util_water","cat":"편의","kr":"물을 어디서 살 수 있나요?","local":"水はどこで買えますか？","roman":"미즈와 도코데 카에마스카?"},{"id":"util_umbrella","cat":"편의","kr":"우산을 어디서 살 수 있나요?","local":"傘はどこで買えますか？","roman":"카사와 도코데 카에마스카?"},{"id":"util_sit","cat":"편의","kr":"잠깐 앉아 있어도 될까요?","local":"少し座ってもいいですか？","roman":"스코시 스왓테모 이이데스카?"},{"id":"sos_lost","cat":"분실·긴급","kr":"길을 잃었습니다.","local":"道に迷いました。","roman":"미치니 마요이마시타."},{"id":"sos_item","cat":"분실·긴급","kr":"물건을 잃어버렸습니다.","local":"物をなくしました。","roman":"모노오 나쿠시마시타."},{"id":"sos_phone","cat":"분실·긴급","kr":"휴대폰을 잃어버렸습니다.","local":"スマホをなくしました。","roman":"스마호오 나쿠시마시타."},{"id":"sos_wallet","cat":"분실·긴급","kr":"지갑을 잃어버렸습니다.","local":"財布をなくしました。","roman":"사이후오 나쿠시마시타."},{"id":"sos_passport","cat":"분실·긴급","kr":"여권을 잃어버렸습니다.","local":"パスポートをなくしました。","roman":"파스포-토오 나쿠시마시타."},{"id":"sos_lostoffice","cat":"분실·긴급","kr":"분실물 센터가 어디예요?","local":"忘れ物センターはどこですか？","roman":"와스레모노 센타-와 도코데스카?"},{"id":"sos_police","cat":"분실·긴급","kr":"경찰을 불러 주세요.","local":"警察を呼んでください。","roman":"케이사츠오 욘데 쿠다사이."},{"id":"sos_help","cat":"분실·긴급","kr":"도와주세요.","local":"助けてください。","roman":"타스케테 쿠다사이."},{"id":"sos_embassy","cat":"분실·긴급","kr":"대한민국 대사관 또는 총영사관에 연락하고 싶습니다.","local":"韓国大使館または総領事館に連絡したいです。","roman":"칸코쿠 타이시칸 마타와 소료지칸니 렌라쿠시타이데스."},{"id":"sos_phone_call","cat":"분실·긴급","kr":"전화를 한 통 빌릴 수 있을까요?","local":"電話を一本お借りできますか？","roman":"덴와오 잇폰 오카리데키마스카?"},{"id":"sos_stranger","cat":"분실·긴급","kr":"이 사람이 저를 따라옵니다.","local":"この人に付きまとわれています。","roman":"코노 히토니 츠키마토와레테이마스."},{"id":"nope_no","cat":"거절·사과","kr":"괜찮습니다. 필요 없어요.","local":"結構です。必要ありません。","roman":"켓코-데스. 히츠요- 아리마센."},{"id":"nope_notbuy","cat":"거절·사과","kr":"오늘은 사지 않을게요.","local":"今日は買いません。","roman":"쿄-와 카이마센."},{"id":"nope_alone","cat":"거절·사과","kr":"혼자 있고 싶습니다.","local":"一人にしてください。","roman":"히토리니 시테 쿠다사이."},{"id":"nope_stop","cat":"거절·사과","kr":"그만해 주세요.","local":"やめてください。","roman":"야메테 쿠다사이."},{"id":"nope_mistake","cat":"거절·사과","kr":"제가 실수했습니다. 죄송합니다.","local":"私の間違いです。申し訳ありません。","roman":"와타시노 마치가이데스. 모-시와케 아리마센."},{"id":"nope_didnt","cat":"거절·사과","kr":"몰라서 그랬습니다. 죄송합니다.","local":"知らずにやってしまいました。すみません。","roman":"시라즈니 얏테시마이마시타. 스미마센."}], CHOICES=[{"localQ":"どちらですか？","krQ":"어느 쪽인가요?","answers":[{"local":"左","kr":"왼쪽"},{"local":"右","kr":"오른쪽"},{"local":"まっすぐ","kr":"직진"},{"local":"上の階","kr":"위층"},{"local":"下の階","kr":"아래층"},{"local":"✍ 入力する","kr":"직접 입력","input":true}]},{"localQ":"何時ですか？","krQ":"몇 시인가요?","answers":[{"local":"✍ 入力する","kr":"직접 입력","input":true}]},{"localQ":"どのくらい待ちますか？","krQ":"얼마나 기다려야 하나요?","answers":[{"local":"5分","kr":"5분"},{"local":"10分","kr":"10분"},{"local":"20分","kr":"20분"},{"local":"30分以上","kr":"30분 이상"},{"local":"✍ 入力する","kr":"직접 입력","input":true}]},{"localQ":"どの支払い方法が使えますか？","krQ":"어떤 결제수단이 되나요?","answers":[{"local":"現金","kr":"현금"},{"local":"クレジットカード","kr":"신용카드"},{"local":"交通系IC","kr":"교통카드"},{"local":"QR決済","kr":"QR 결제"},{"local":"現金のみ","kr":"현금만"}]},{"localQ":"店内ですか？持ち帰りですか？","krQ":"매장인가요, 포장인가요?","answers":[{"local":"店内","kr":"매장에서 먹기"},{"local":"持ち帰り","kr":"포장"}]},{"localQ":"ありますか？","krQ":"있나요?","answers":[{"local":"あります","kr":"있어요"},{"local":"ありません","kr":"없어요"},{"local":"確認します","kr":"확인해볼게요"}]},{"localQ":"写真は大丈夫ですか？","krQ":"사진 촬영 가능한가요?","answers":[{"local":"大丈夫です","kr":"가능해요"},{"local":"フラッシュ禁止","kr":"플래시 금지"},{"local":"撮影禁止","kr":"촬영 금지"},{"local":"ここだけ可","kr":"여기만 가능"}]},{"localQ":"何番ですか？","krQ":"몇 번인가요?","answers":[{"local":"✍ 入力する","kr":"직접 입력","input":true}]},{"localQ":"どこで待てばいいですか？","krQ":"어디에서 기다리면 되나요?","answers":[{"local":"ここ","kr":"여기"},{"local":"入口","kr":"입구"},{"local":"ロビー","kr":"로비"},{"local":"外","kr":"밖"},{"local":"✍ 入力する","kr":"직접 입력","input":true}]},{"localQ":"この後どうなりますか？","krQ":"이다음은 어떻게 되나요?","answers":[{"local":"そのままお待ちください","kr":"그대로 기다리세요"},{"local":"こちらへどうぞ","kr":"이쪽으로 오세요"},{"local":"後で呼びます","kr":"나중에 부를게요"},{"local":"終わりです","kr":"끝났습니다"}]},{"localQ":"料金はいくらですか？","krQ":"금액이 얼마인가요?","answers":[{"local":"無料","kr":"무료"},{"local":"追加料金があります","kr":"추가 요금이 있어요"},{"local":"✍ 入力する","kr":"직접 입력","input":true}]},{"localQ":"場所の名前を教えてください。","krQ":"장소 이름을 알려 주세요.","answers":[{"local":"✍ 入力する","kr":"직접 입력","input":true}]},{"localQ":"Wi-Fiのパスワードを教えてください。","krQ":"와이파이 비밀번호를 알려 주세요.","answers":[{"local":"パスワードなし","kr":"비밀번호 없음"},{"local":"✍ 入力する","kr":"직접 입력","input":true}]}], SCENES=[{"title": "택시 타고 목적지 가기", "icon": "🚕", "ids": ["taxi_address", "taxi_time", "taxi_fare", "taxi_card", "taxi_stop"]}, {"title": "식당 들어가서 계산까지", "icon": "🍜", "ids": ["eat_howmany", "eat_wait", "eat_menu_en", "eat_recommend", "eat_nospicy", "eat_water", "eat_bill"]}, {"title": "호텔 체크인", "icon": "🏨", "ids": ["hotel_checkin", "hotel_reserved", "hotel_early", "hotel_luggage", "hotel_wifi", "hotel_breakfast"]}, {"title": "지하철·기차 타기", "icon": "🚉", "ids": ["tr_station", "tr_thistrain", "tr_platform", "tr_transfer", "tr_exit", "tr_lasttrain"]}, {"title": "가게에서 물건 사기", "icon": "🛍️", "ids": ["shop_price", "shop_size", "shop_try", "shop_taxfree", "pay_card", "pay_receipt"]}, {"title": "몸이 아플 때", "icon": "🏥", "ids": ["med_pain", "med_fever", "med_allergy", "med_medicine", "med_korean", "med_hospital"]}, {"title": "길 물어보기", "icon": "🧭", "ids": ["see_where", "basic_point", "see_howlong", "basic_slow", "basic_write"]}, {"title": "사진 부탁하기", "icon": "📷", "ids": ["pic_me", "pic_button", "pic_background", "pic_again", "basic_thanks"]}], SOSNUM=[{"label":"경찰","num":"110","desc":"일본 경찰 신고 번호"},{"label":"화재·구급","num":"119","desc":"소방 및 구급차 호출"},{"label":"해양 사고","num":"118","desc":"해상 긴급 신고"},{"label":"외교부 영사안전콜센터","num":"+82-2-3210-0404","desc":"24시간 한국어 상담"},{"label":"JNTO 방문자 핫라인","num":"050-3816-2787","desc":"24시간 365일 · 한국어 지원 · 사고·질병·재해·여행 도움"}], SOSCARD=[{"kr":"이 사람은 한국인 관광객입니다. 일본어를 하지 못합니다.","local":"この人は韓国人観光客です。日本語が話せません。"},{"kr":"도와주세요. 응급 상황입니다.","local":"助けてください。緊急です。"},{"kr":"구급차를 불러 주세요.","local":"救急車を呼んでください。"},{"kr":"경찰을 불러 주세요.","local":"警察を呼んでください。"},{"kr":"대한민국 대사관 또는 총영사관에 연락해 주세요.","local":"韓国大使館または総領事館に連絡してください。"},{"kr":"여기 적힌 곳으로 데려다 주세요.","local":"ここに書いてある場所へ連れて行ってください。"}];
@@ -241,7 +269,8 @@ const store={
 let favs=new Set(store.get('favs',[]));
 let recent=store.get('recent',[]);
 let cfg=Object.assign({theme:'auto',size:'m',rom:true,rate:0.85},store.get('cfg',{}));
-let tab='phrases', cat='전체', query='';
+let tab='phrases', cat='전체', query='', sceneOpen=0;
+let lastFocus=null, sheetLastFocus=null, toastTimer=null;
 
 /* ── settings */
 function applyCfg(){
@@ -260,15 +289,44 @@ function buildSheet(){
   seg($('segRom'),[[true,'표시'],[false,'숨김']],cfg.rom,v=>{cfg.rom=(v==='true');applyCfg();render()});
   seg($('segRate'),[[0.7,'느리게'],[0.85,'보통'],[1,'빠르게']],cfg.rate,v=>{cfg.rate=parseFloat(v);applyCfg()});
 }
-function openSheet(){buildSheet();$('sheet').classList.add('on')}
-function closeSheet(){$('sheet').classList.remove('on')}
+function openSheet(){
+  sheetLastFocus=document.activeElement;
+  buildSheet();
+  $('sheet').classList.add('on');
+  document.body.style.overflow='hidden';
+  requestAnimationFrame(()=>{const b=$('sheet').querySelector('button');if(b)b.focus()});
+}
+function closeSheet(){
+  $('sheet').classList.remove('on');
+  document.body.style.overflow='';
+  if(sheetLastFocus&&sheetLastFocus.focus)sheetLastFocus.focus();
+}
 
 /* ── speech */
-function speak(t){
-  if(!t)return;
-  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=LANG;u.rate=cfg.rate;speechSynthesis.speak(u)}
-  catch(e){}
+function notify(msg){
+  const el=$('toast');if(!el)return;
+  el.textContent=msg;el.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('on'),2800);
 }
+function speak(t,isTest=false){
+  if(!t)return;
+  if(!('speechSynthesis' in window)||typeof SpeechSynthesisUtterance==='undefined'){
+    notify('일본어 음성 재생을 지원하지 않는 브라우저예요.');
+    return;
+  }
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(t);
+    u.lang=LANG;u.rate=cfg.rate;
+    u.onerror=()=>notify('일본어 음성을 재생하지 못했어요. 기기 음성 설정을 확인해 주세요.');
+    if(isTest)u.onstart=()=>notify('일본어 음성 테스트 재생 중');
+    speechSynthesis.speak(u);
+  }catch(e){
+    notify('일본어 음성을 재생하지 못했어요. 기기 음성 설정을 확인해 주세요.');
+  }
+}
+function testSpeech(){speak('こんにちは',true)}
 
 /* ── signboard */
 let BST={local:'',kr:'',rom:'',list:[],i:-1,replies:[]};
@@ -281,8 +339,10 @@ function openBoard(local,kr,rom,list,i,isSos,replies){
   $('board').classList.toggle('sos',!!isSos);
   $('bRep').innerHTML=BST.replies.map((r,j)=>`<button onclick="reply(${j})">${esc(r.local)}</button>`).join('');
   $('bRep').style.display=BST.replies.length?'grid':'none';
+  lastFocus=document.activeElement;
   $('board').classList.add('on');
   document.body.style.overflow='hidden';
+  requestAnimationFrame(()=>{const b=$('board').querySelector('.bt button');if(b)b.focus()});
 }
 function openPhrase(id,list){
   const p=byId[id];if(!p)return;
@@ -317,8 +377,13 @@ function reply(j){
   el.querySelector('span').textContent=r.local;
   el.classList.add('on');
 }
-function closeBoard(){$('board').classList.remove('on');document.body.style.overflow=''}
+function closeBoard(){
+  $('board').classList.remove('on');
+  document.body.style.overflow='';
+  if(lastFocus&&lastFocus.focus)lastFocus.focus();
+}
 addEventListener('keydown',e=>{
+  if($('sheet').classList.contains('on')&&e.key==='Escape'){closeSheet();return}
   if(!$('board').classList.contains('on'))return;
   if(e.key==='Escape')closeBoard();
   if(e.key==='ArrowRight')boardStep(1);
@@ -334,7 +399,7 @@ function cardHTML(p,listJson){
     <span class="bar"></span>
     <button class="body" onclick='openPhrase("${p.id}",${listJson})'>
       <span class="kr">${esc(p.kr)}</span>
-      <span class="local loc">${esc(p.local)}</span>
+      <span class="local loc" lang="ja">${esc(p.local)}</span>
       ${cfg.rom&&p.roman?`<span class="rom">${esc(p.roman)}</span>`:''}
     </button>
     <div class="side">
@@ -358,12 +423,20 @@ function viewPhrases(){
     <input id="q" placeholder="찾기: 화장실, 계산, 아파요, 몇 시…" value="${esc(query)}" oninput="query=this.value;render(true)">
     <div class="chips" id="chips">${CATS.map(c=>`<button class="chip" aria-pressed="${c===cat}" onclick="cat='${c}';render()">${esc(c)}</button>`).join('')}</div>
   </div>`;
+  if(cat==='전체'&&!query.trim()){
+    const quickRecent=recent.slice(0,3).map(id=>byId[id]).filter(Boolean);
+    if(quickRecent.length){
+      const quickIds=quickRecent.map(p=>p.id);
+      html+=`<div class="quick-block"><div class="quick-title">방금 쓴 문장</div><div class="quick-recent">${quickRecent.map(p=>`<button type="button" onclick='openPhrase("${p.id}",${JSON.stringify(quickIds)})'><span class="local loc" lang="ja">${esc(p.local)}</span><span class="kr">${esc(p.kr)}</span></button>`).join('')}</div></div>`;
+    }
+    html+=`<div class="quick-block"><div class="quick-title">지금 어떤 상황인가요?</div><div class="scene-shortcuts">${SCENES.slice(0,6).map((s,i)=>`<button type="button" onclick="openScene(${i})"><span>${s.icon}</span>${esc(s.title)}</button>`).join('')}</div></div>`;
+  }
   let items;
   if(cat==='최근'){items=recent.map(id=>byId[id]).filter(Boolean)}
   else{items=PHRASES.filter(p=>cat==='전체'||p.cat===cat)}
   if(query.trim()){
     const q=query.trim().toLowerCase();
-    items=PHRASES.filter(p=>(p.kr+' '+p.local+' '+(p.roman||'')+' '+p.cat).toLowerCase().includes(q));
+    items=items.filter(p=>(p.kr+' '+p.local+' '+(p.roman||'')+' '+p.cat).toLowerCase().includes(q));
   }
   if(!items.length){
     html+=`<div class="empty"><b>${cat==='최근'?'아직 사용한 문장이 없어요':'찾는 문장이 없어요'}</b>${cat==='최근'?'문장을 한 번 열어보면 여기 쌓입니다.':'다른 단어로 찾아보거나 위 분류를 눌러보세요.'}</div>`;
@@ -373,16 +446,22 @@ function viewPhrases(){
   return html;
 }
 
+function openScene(i){
+  sceneOpen=i;
+  tab='scenes';query='';
+  render();
+  requestAnimationFrame(()=>{const el=document.querySelector('[data-scene-index="'+i+'"]');if(el)el.scrollIntoView({block:'start'})});
+}
 function viewScenes(){
   let html=`<div class="note"><b>순서대로 따라가면 끝납니다</b>상황을 열고 위에서부터 하나씩 보여주세요. 문장을 누르면 화면 가득 커집니다.</div>`;
   SCENES.forEach((s,i)=>{
     const ids=JSON.stringify(s.ids).replace(/"/g,'&quot;');
-    html+=`<details class="scene"${i===0?' open':''}>
+    html+=`<details class="scene"${i===sceneOpen?' open':''} data-scene-index="${i}">
       <summary><span class="em">${s.icon}</span>${esc(s.title)}<span class="cnt">${s.ids.length}단계</span></summary>
       <div class="steps">${s.ids.map((id,j)=>{const p=byId[id];if(!p)return '';
         return `<button class="step" onclick='openPhrase("${id}",${ids})'>
           <span class="n">${j+1}</span>
-          <span><span class="local loc">${esc(p.local)}</span><span class="kr" style="display:block">${esc(p.kr)}</span></span>
+          <span><span class="local loc" lang="ja">${esc(p.local)}</span><span class="kr" style="display:block">${esc(p.kr)}</span></span>
         </button>`}).join('')}</div>
     </details>`;
   });
@@ -392,7 +471,7 @@ function viewScenes(){
 function viewShow(){
   let html=`<div class="note"><b>입력한 내용을 그대로 크게 보여줍니다</b>주소·호텔명·사람 이름·예약번호·문장·현지어·숫자 등 무엇이든 적을 수 있어요.</div>`;
   html+=head('직접 입력해서 보여주기');
-  html+=`<textarea class="big-input" id="pen" inputmode="text" autocomplete="off" autocapitalize="none" placeholder="예: Hilton Tokyo / 18:30 / 王府井大街 / 예약번호 A1234"></textarea>
+  html+=`<textarea class="big-input" id="pen" inputmode="text" autocomplete="off" autocapitalize="none" placeholder="예: Hilton Tokyo / 18:30 / 新宿駅 / 예약번호 A1234"></textarea>
   <div class="pad">${['1','2','3','4','5','6','7','8','9',':','0','←'].map(k=>`<button type="button" onclick="pad('${k}')">${k}</button>`).join('')}</div>
   <div class="note" style="margin-top:8px"><b>숫자 패드는 선택 사항</b>위 입력칸에는 휴대폰 키보드로 일반 글자도 자유롭게 입력할 수 있습니다.</div>
   <button type="button" class="wide" onclick="showPen(event)">입력한 내용 크게 보여주기</button>`;
@@ -401,12 +480,12 @@ function viewShow(){
     html+=`<div class="q">
       <div class="qhead">
         <button type="button" class="qshow" onclick="openChoiceBoard(${i})">
-          <div class="ql loc">${esc(c.localQ)}</div>
+          <div class="ql loc" lang="ja">${esc(c.localQ)}</div>
           <div class="qk">${esc(c.krQ)}</div>
           <span class="qhint">↗ 질문 크게 보여주기</span>
         </button>
       </div>
-      <div class="opts">${c.answers.map((a,j)=>`<button type="button" class="loc" onclick="pick(${i},${j})">${esc(a.local)}</button>`).join('')}</div>
+      <div class="opts">${c.answers.map((a,j)=>`<button type="button" class="loc" lang="ja" onclick="pick(${i},${j})"><span class="optlocal">${esc(a.local)}</span><span class="optkr">${esc(a.kr||'직접 입력')}</span></button>`).join('')}</div>
       <div class="ans" id="a${i}"><b></b><span></span></div>
     </div>`;
   });
@@ -471,9 +550,10 @@ function viewSos(){
   html+=head('바로 보여줄 카드');
   SOSCARD.forEach((c,i)=>{
     html+=`<button class="sosbtn" onclick="openBoard(${attr(c.local)},${attr(c.kr)},'',[],-1,true)">
-      <span class="local loc">${esc(c.local)}</span><span class="kr">${esc(c.kr)}</span></button>`;
+      <span class="local loc" lang="ja">${esc(c.local)}</span><span class="kr">${esc(c.kr)}</span></button>`;
   });
   html+=head('전화 걸기');
+  html+=`<div class="verified">긴급 연락처 확인: 2026-10</div>`;
   html+=`<div class="sos-grid">${SOSNUM.map(n=>`<a class="tel" href="tel:${n.num.replace(/[^0-9+]/g,'')}">
     <div class="num">${esc(n.num)}</div><div class="lb">${esc(n.label)}</div><div class="ds">${esc(n.desc)}</div></a>`).join('')}</div>`;
   return html;
@@ -498,5 +578,17 @@ function render(keepFocus){
 function setTab(t){tab=t;query='';try{scrollTo(0,0)}catch(e){}render()}
 
 matchMedia('(prefers-color-scheme:dark)').addEventListener?.('change',()=>{if(cfg.theme==='auto')applyCfg()});
+function setupOffline(){
+  const el=$('offlineStatus');
+  if(!('serviceWorker' in navigator)){
+    if(el)el.textContent='오프라인 자동 저장 미지원';
+    return;
+  }
+  navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'})
+    .then(()=>navigator.serviceWorker.ready)
+    .then(()=>{if(el)el.textContent='✓ 오프라인 사용 준비 완료'})
+    .catch(()=>{if(el)el.textContent='오프라인 준비 실패 · 인터넷 연결 후 다시 열어주세요'});
+}
+setupOffline();
 applyCfg();render();
 </script></body></html>
