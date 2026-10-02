@@ -1,0 +1,441 @@
+<!doctype html><html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="theme-color" content="#14396d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>일본 여행 생존 앱</title>
+<style>
+:root{
+  --accent:#14396d; --accent-deep:#0d2649; --signal:#ffc400;
+  --bg:#e8eaee; --panel:#fff; --ink:#101720; --sub:#5b6572; --line:#d3d8df;
+  --chipbg:#fff; --fs:1;
+}
+html[data-theme="dark"]{
+  --bg:#0c1016; --panel:#161d26; --ink:#eef2f7; --sub:#93a0af; --line:#27313d; --chipbg:#161d26;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Pretendard Variable",Pretendard,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  font-size:calc(16px * var(--fs));
+  -webkit-text-size-adjust:100%;
+  padding-bottom:calc(78px + env(safe-area-inset-bottom));
+}
+.loc{font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Microsoft YaHei","PingFang SC","Noto Sans JP","Noto Sans SC",-apple-system,sans-serif}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+
+/* ── header: 표지판 상단 띠 */
+header{position:sticky;top:0;z-index:30;background:var(--accent);color:#fff;padding:env(safe-area-inset-top) 0 0}
+.hrow{display:flex;align-items:center;gap:10px;padding:12px 16px 12px;max-width:820px;margin:0 auto}
+.hmark{width:6px;height:30px;background:var(--signal);flex:none}
+.htitle{font-size:1.06rem;font-weight:800;letter-spacing:-.02em;line-height:1.2;flex:1;min-width:0}
+.htitle small{display:block;font-size:.68rem;font-weight:500;opacity:.78;margin-top:2px;letter-spacing:0}
+.hbtn{width:42px;height:42px;border-radius:3px;background:rgba(255,255,255,.14);color:#fff;font-size:1.15rem;display:grid;place-items:center;flex:none}
+.hbtn:active{background:rgba(255,255,255,.3)}
+
+.wrap{max-width:820px;margin:0 auto;padding:0 14px}
+
+/* ── search + chips */
+.searchbar{position:sticky;top:calc(58px + env(safe-area-inset-top));z-index:20;background:var(--bg);padding:12px 0 6px}
+.searchbar input{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:14px 14px;outline:none}
+.searchbar input:focus{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.chips::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;border:1px solid var(--line);background:var(--chipbg);color:var(--sub);padding:9px 13px;border-radius:2px;font-size:.85rem;font-weight:600}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* ── phrase card: 좌측 방향바 = 표지판 */
+.list{display:grid;gap:8px;padding-bottom:20px}
+.pc{display:grid;grid-template-columns:5px 1fr auto;background:var(--panel);border:1px solid var(--line);border-radius:3px;overflow:hidden;align-items:stretch}
+.pc>.bar{background:var(--accent)}
+.pc.fav>.bar{background:var(--signal)}
+.pc>.body{padding:13px 4px 13px 13px;text-align:left;min-width:0}
+.pc .kr{display:block;font-size:.83rem;font-weight:600;color:var(--sub);line-height:1.4}
+.pc .local{display:block;font-size:1.19rem;font-weight:700;line-height:1.42;margin-top:5px;letter-spacing:-.01em;word-break:break-word}
+.pc .rom{display:block;font-size:.75rem;color:var(--sub);margin-top:5px;line-height:1.4}
+.side{display:flex;flex-direction:column;justify-content:center;gap:2px;padding:6px 8px}
+.side button{width:44px;height:40px;border-radius:3px;font-size:1.05rem;display:grid;place-items:center;color:var(--sub)}
+.side button:active{background:var(--bg)}
+.side .on{color:var(--signal)}
+html[data-theme="dark"] .side .on{color:var(--signal)}
+
+.empty{text-align:center;color:var(--sub);padding:56px 20px;line-height:1.6;font-size:.9rem}
+.empty b{display:block;color:var(--ink);font-size:1rem;margin-bottom:6px}
+
+/* ── section heads */
+.sect{margin:18px 0 9px;display:flex;align-items:center;gap:9px}
+.sect i{width:5px;height:17px;background:var(--accent);font-style:normal;flex:none}
+.sect h2{margin:0;font-size:.92rem;font-weight:800;letter-spacing:-.01em}
+.note{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--signal);border-radius:3px;padding:12px 13px;font-size:.83rem;color:var(--sub);line-height:1.6;margin:12px 0}
+.note b{color:var(--ink);display:block;margin-bottom:3px;font-size:.88rem}
+
+/* ── scene */
+.scene{background:var(--panel);border:1px solid var(--line);border-radius:3px;margin-bottom:8px;overflow:hidden}
+.scene>summary{list-style:none;padding:15px 14px;display:flex;align-items:center;gap:11px;font-weight:700;font-size:.98rem;cursor:pointer}
+.scene>summary::-webkit-details-marker{display:none}
+.scene>summary .em{font-size:1.25rem}
+.scene>summary .cnt{margin-left:auto;font-size:.75rem;color:var(--sub);font-weight:600}
+.scene[open]>summary{background:var(--accent);color:#fff}
+.scene[open]>summary .cnt{color:rgba(255,255,255,.8)}
+.scene .steps{padding:8px;display:grid;gap:8px}
+.step{display:grid;grid-template-columns:26px 1fr;gap:9px;align-items:start;text-align:left;width:100%;padding:9px 6px;border-radius:3px}
+.step:active{background:var(--bg)}
+.step .n{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:.75rem;font-weight:800;display:grid;place-items:center;margin-top:2px}
+.step .local{font-size:1.02rem;font-weight:700;line-height:1.4}
+.step .kr{font-size:.76rem;color:var(--sub);margin-top:3px}
+
+/* ── show tab */
+.big-input{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:15px;font-size:1.15rem;font-weight:700;outline:none;resize:none;min-height:72px}
+.big-input:focus{border-color:var(--accent)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}
+.pad button{background:var(--panel);border:1px solid var(--line);border-radius:3px;height:54px;font-size:1.2rem;font-weight:700}
+.pad button:active{background:var(--accent);color:#fff}
+.wide{width:100%;background:var(--accent);color:#fff;border-radius:3px;padding:16px;font-weight:800;font-size:1rem;margin-top:9px}
+.wide:active{background:var(--accent-deep)}
+.wide.ghost{background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+
+.q{background:var(--panel);border:1px solid var(--line);border-radius:3px;margin-bottom:9px;overflow:hidden}
+.q .qhead{background:var(--accent-deep);color:#fff;padding:14px}
+.q .ql{font-size:1.24rem;font-weight:800;line-height:1.35}
+.q .qk{font-size:.76rem;opacity:.8;margin-top:4px}
+.q .opts{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:9px}
+.q .opts button{background:var(--bg);border:1px solid var(--line);border-radius:3px;min-height:58px;padding:10px 8px;font-size:1.05rem;font-weight:700;line-height:1.3}
+.q .opts button:active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.q .ans{display:none;padding:14px;border-top:2px solid var(--signal);background:var(--bg)}
+.q .ans.on{display:block}
+.q .ans b{display:block;font-size:1.5rem;font-weight:800}
+.q .ans span{font-size:.8rem;color:var(--sub)}
+
+/* ── SOS */
+.sos-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tel{display:block;text-decoration:none;color:inherit;background:var(--panel);border:1px solid var(--line);border-left:5px solid #d92b2b;border-radius:3px;padding:14px}
+.tel .num{font-size:1.5rem;font-weight:800;letter-spacing:-.02em}
+.tel .lb{font-size:.83rem;font-weight:700;margin-top:2px}
+.tel .ds{font-size:.72rem;color:var(--sub);margin-top:3px}
+.sosbtn{width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);border-left:5px solid #d92b2b;border-radius:3px;padding:14px;margin-bottom:8px}
+.sosbtn .local{display:block;white-space:pre-wrap;font-size:1.1rem;font-weight:800;line-height:1.4}
+.sosbtn .kr{display:block;font-size:.78rem;color:var(--sub);margin-top:4px}
+
+/* ── nav */
+nav{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--panel);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.navin{max-width:820px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+.navin button{padding:9px 2px 10px;font-size:.66rem;font-weight:700;color:var(--sub);display:grid;gap:3px;justify-items:center;border-top:3px solid transparent;margin-top:-1px}
+.navin button .ic{font-size:1.12rem;line-height:1}
+.navin button[aria-selected="true"]{color:var(--accent);border-top-color:var(--accent)}
+html[data-theme="dark"] .navin button[aria-selected="true"]{color:var(--signal);border-top-color:var(--signal)}
+
+/* ── signboard (풀스크린) */
+#board{position:fixed;inset:0;z-index:100;background:var(--accent);color:#fff;display:none;flex-direction:column}
+#board.on{display:flex}
+#board.sos{background:#b81f1f}
+#board .bt{display:flex;align-items:center;padding:calc(10px + env(safe-area-inset-top)) 12px 8px;gap:6px}
+#board .bt button{width:46px;height:46px;border-radius:3px;background:rgba(255,255,255,.16);color:#fff;font-size:1.1rem;display:grid;place-items:center}
+#board .bt .sp{flex:1}
+#board .mid{flex:1;display:flex;flex-direction:column;justify-content:center;padding:8px 22px;text-align:center;overflow:auto}
+#bLocal{font-size:clamp(30px,8.4vw,74px);font-weight:800;line-height:1.28;letter-spacing:-.02em;word-break:break-word}
+#bKr{font-size:clamp(13px,3.4vw,19px);opacity:.82;margin-top:20px;line-height:1.5}
+#bRom{font-size:clamp(11px,3vw,15px);opacity:.6;margin-top:8px}
+#board .rep{padding:10px 12px calc(14px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1fr;gap:7px}
+#board .rep button{background:#fff;color:#111;border-radius:3px;min-height:60px;font-size:1.05rem;font-weight:800;padding:8px}
+#board .rep button:active{background:var(--signal)}
+#bReply{display:none;background:#fff;color:#111;border-radius:3px;padding:16px;margin:0 12px 10px;text-align:center}
+#bReply.on{display:block}
+#bReply b{display:block;font-size:1.7rem;font-weight:800;line-height:1.25}
+#bReply span{font-size:.8rem;color:#666;display:block;margin-top:5px}
+
+/* ── settings sheet */
+#sheet{position:fixed;inset:0;z-index:110;background:rgba(0,0,0,.45);display:none;align-items:flex-end}
+#sheet.on{display:flex}
+.sheetin{background:var(--panel);width:100%;max-width:820px;margin:0 auto;border-radius:12px 12px 0 0;padding:18px 16px calc(20px + env(safe-area-inset-bottom));max-height:82vh;overflow:auto}
+.srow{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.srow:last-of-type{border-bottom:0}
+.srow .lbl{flex:1;font-size:.9rem;font-weight:700}
+.srow .lbl small{display:block;font-weight:500;color:var(--sub);font-size:.73rem;margin-top:2px}
+.seg{display:flex;border:1px solid var(--line);border-radius:3px;overflow:hidden;flex:none}
+.seg button{padding:9px 11px;font-size:.78rem;font-weight:700;color:var(--sub);min-width:46px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+
+@media(min-width:640px){
+  .list{grid-template-columns:1fr 1fr}
+  .q .opts{grid-template-columns:repeat(3,1fr)}
+  #board .rep{grid-template-columns:repeat(4,1fr)}
+}
+@media(prefers-reduced-motion:no-preference){
+  .pc,.scene>summary{transition:background .12s}
+}
+:focus-visible{outline:3px solid var(--signal);outline-offset:2px}
+</style></head><body>
+
+<header>
+  <div class="hrow">
+    <span class="hmark"></span>
+    <div class="htitle">일본 여행 생존 앱<small>일본어 ↔ 한국어 · 인터넷 없이 동작</small></div>
+    <button class="hbtn" onclick="openSheet()" aria-label="설정">⚙</button>
+  </div>
+</header>
+
+<main class="wrap" id="main"></main>
+
+<nav><div class="navin" id="nav"></div></nav>
+
+<div id="board" onclick="if(event.target.id==='board')closeBoard()">
+  <div class="bt">
+    <button onclick="closeBoard()" aria-label="닫기">✕</button>
+    <span class="sp"></span>
+    <button onclick="boardStep(-1)" aria-label="이전">‹</button>
+    <button onclick="boardStep(1)" aria-label="다음">›</button>
+    <button onclick="speak(BST.local)" aria-label="읽어주기">🔊</button>
+  </div>
+  <div class="mid">
+    <div id="bLocal" class="loc"></div>
+    <div id="bKr"></div>
+    <div id="bRom"></div>
+  </div>
+  <div id="bReply"><b></b><span></span></div>
+  <div class="rep" id="bRep"></div>
+</div>
+
+<div id="sheet" onclick="if(event.target.id==='sheet')closeSheet()">
+  <div class="sheetin">
+    <div class="srow"><div class="lbl">화면<small>어두운 곳에서는 다크가 눈이 편해요</small></div>
+      <div class="seg" id="segTheme"></div></div>
+    <div class="srow"><div class="lbl">글자 크기<small>장갑 끼고도 읽히게</small></div>
+      <div class="seg" id="segSize"></div></div>
+    <div class="srow"><div class="lbl">발음 표기<small>한글 발음 줄</small></div>
+      <div class="seg" id="segRom"></div></div>
+    <div class="srow"><div class="lbl">읽어주는 속도<small>상대가 알아듣기 좋은 속도</small></div>
+      <div class="seg" id="segRate"></div></div>
+    <div class="note" style="margin-top:14px">
+      <b>개인정보를 저장하지 않습니다</b>
+      즐겨찾기·최근 사용·화면 설정만 이 기기의 브라우저에 저장됩니다.
+    </div>
+    <button class="wide ghost" onclick="closeSheet()">닫기</button>
+  </div>
+</div>
+
+<script>
+const PHRASES=[{"id": "basic_hello", "cat": "기본", "kr": "안녕하세요. 일본어를 조금만 할 수 있어요.", "local": "こんにちは。日本語は少しだけ話せます。", "roman": "곤니치와. 니혼고와 스코시다케 하나세마스."}, {"id": "basic_korean", "cat": "기본", "kr": "저는 한국에서 왔습니다.", "local": "韓国から来ました。", "roman": "칸코쿠카라 키마시타."}, {"id": "basic_slow", "cat": "기본", "kr": "천천히 말씀해 주세요.", "local": "すみません、ゆっくり話してください。", "roman": "스미마센, 윳쿠리 하나시테 쿠다사이."}, {"id": "basic_again", "cat": "기본", "kr": "한 번만 더 말씀해 주세요.", "local": "もう一度お願いします。", "roman": "모- 이치도 오네가이시마스."}, {"id": "basic_point", "cat": "기본", "kr": "여기에서 해당하는 걸 눌러 주세요.", "local": "ここから当てはまるものを押してください。", "roman": "코코카라 아테하마루 모노오 오시테 쿠다사이."}, {"id": "basic_write", "cat": "기본", "kr": "여기에 적어 주세요.", "local": "ここに書いてください。", "roman": "코코니 카이테 쿠다사이."}, {"id": "basic_english", "cat": "기본", "kr": "영어로 말해도 될까요?", "local": "英語でも大丈夫ですか？", "roman": "에이고데모 다이죠부데스카?"}, {"id": "basic_translate", "cat": "기본", "kr": "번역 앱을 써도 될까요?", "local": "翻訳アプリを使ってもいいですか？", "roman": "혼야쿠 아푸리오 츠캇테모 이이데스카?"}, {"id": "basic_photo_ok", "cat": "기본", "kr": "이 화면을 사진으로 찍어도 될까요?", "local": "この画面を写真に撮ってもいいですか？", "roman": "코노 가멘오 샤신니 톳테모 이이데스카?"}, {"id": "basic_wait", "cat": "기본", "kr": "잠깐만 기다려 주세요.", "local": "少し待ってください。", "roman": "스코시 맛테 쿠다사이."}, {"id": "basic_thanks", "cat": "기본", "kr": "정말 감사합니다.", "local": "本当にありがとうございます。", "roman": "혼토니 아리가토 고자이마스."}, {"id": "basic_sorry", "cat": "기본", "kr": "죄송합니다.", "local": "申し訳ありません。", "roman": "모-시와케 아리마센."}, {"id": "basic_ok", "cat": "기본", "kr": "네, 괜찮습니다.", "local": "はい、大丈夫です。", "roman": "하이, 다이죠부데스."}, {"id": "basic_no", "cat": "기본", "kr": "아니요, 괜찮습니다.", "local": "いいえ、結構です。", "roman": "이이에, 켓코-데스."}, {"id": "basic_understand", "cat": "기본", "kr": "이해했습니다.", "local": "わかりました。", "roman": "와카리마시타."}, {"id": "basic_notunderstand", "cat": "기본", "kr": "잘 모르겠습니다.", "local": "よくわかりません。", "roman": "요쿠 와카리마센."}, {"id": "air_gate", "cat": "공항", "kr": "탑승구가 어디예요?", "local": "搭乗口はどこですか？", "roman": "토-죠-구치와 도코데스카?"}, {"id": "air_counter", "cat": "공항", "kr": "체크인 카운터가 어디예요?", "local": "チェックインカウンターはどこですか？", "roman": "쳇쿠인 카운타-와 도코데스카?"}, {"id": "air_baggage", "cat": "공항", "kr": "위탁 수하물은 어디서 부치나요?", "local": "預け荷物はどこで預けますか？", "roman": "아즈케 니모츠와 도코데 아즈케마스카?"}, {"id": "air_overweight", "cat": "공항", "kr": "무게가 초과됐나요?", "local": "重量オーバーですか？", "roman": "쥬-료- 오-바-데스카?"}, {"id": "air_delay", "cat": "공항", "kr": "이 항공편이 지연됐나요?", "local": "この便は遅れていますか？", "roman": "코노 빈와 오쿠레테이마스카?"}, {"id": "air_transfer", "cat": "공항", "kr": "환승은 어디로 가야 하나요?", "local": "乗り継ぎはどこへ行けばいいですか？", "roman": "노리츠기와 도코에 이케바 이이데스카?"}, {"id": "air_claim", "cat": "공항", "kr": "수하물 찾는 곳이 어디예요?", "local": "手荷物受取所はどこですか？", "roman": "테니모츠 우케토리쇼와 도코데스카?"}, {"id": "air_lostbag", "cat": "공항", "kr": "제 짐이 나오지 않았어요.", "local": "荷物が出てきませんでした。", "roman": "니모츠가 데테키마센데시타."}, {"id": "air_battery", "cat": "공항", "kr": "보조배터리는 기내에 들고 타야 하나요?", "local": "モバイルバッテリーは機内持ち込みですか？", "roman": "모바이루 밧테리-와 키나이 모치코미데스카?"}, {"id": "air_train", "cat": "공항", "kr": "시내로 가는 열차는 어디서 타나요?", "local": "市内へ行く電車はどこで乗りますか？", "roman": "시나이에 이쿠 덴샤와 도코데 노리마스카?"}, {"id": "imm_tourism", "cat": "입국", "kr": "관광 목적으로 왔습니다.", "local": "観光で来ました。", "roman": "칸코-데 키마시타."}, {"id": "imm_days", "cat": "입국", "kr": "이 날짜까지 머물 예정입니다.", "local": "この日まで滞在する予定です。", "roman": "코노 히마데 타이자이스루 요테이데스."}, {"id": "imm_hotel", "cat": "입국", "kr": "숙소는 여기입니다.", "local": "宿泊先はここです。", "roman": "슈쿠하쿠사키와 코코데스."}, {"id": "imm_return", "cat": "입국", "kr": "돌아가는 항공권은 여기 있습니다.", "local": "帰りの航空券はこれです。", "roman": "카에리노 코-쿠-켄와 코레데스."}, {"id": "imm_alone", "cat": "입국", "kr": "혼자 왔습니다.", "local": "一人で来ました。", "roman": "히토리데 키마시타."}, {"id": "imm_family", "cat": "입국", "kr": "가족과 함께 왔습니다.", "local": "家族と一緒に来ました。", "roman": "카조쿠토 잇쇼니 키마시타."}, {"id": "imm_nothing", "cat": "입국", "kr": "신고할 물품은 없습니다.", "local": "申告するものはありません。", "roman": "신코쿠스루 모노와 아리마센."}, {"id": "hotel_checkin", "cat": "호텔", "kr": "체크인하러 왔습니다.", "local": "チェックインをお願いします。", "roman": "쳇쿠인오 오네가이시마스."}, {"id": "hotel_reserved", "cat": "호텔", "kr": "이 이름으로 예약했습니다.", "local": "この名前で予約しています。", "roman": "코노 나마에데 요야쿠시테이마스."}, {"id": "hotel_early", "cat": "호텔", "kr": "얼리 체크인이 가능한가요?", "local": "アーリーチェックインはできますか？", "roman": "아-리- 쳇쿠인와 데키마스카?"}, {"id": "hotel_luggage", "cat": "호텔", "kr": "짐을 맡길 수 있을까요?", "local": "荷物を預かっていただけますか？", "roman": "니모츠오 아즈캇테 이타다케마스카?"}, {"id": "hotel_room", "cat": "호텔", "kr": "방 번호가 몇 번인가요?", "local": "部屋番号は何番ですか？", "roman": "헤야 방고-와 난반데스카?"}, {"id": "hotel_key", "cat": "호텔", "kr": "카드키가 작동하지 않아요.", "local": "カードキーが使えません。", "roman": "카-도키-가 츠카에마센."}, {"id": "hotel_wifi", "cat": "호텔", "kr": "와이파이 비밀번호를 알려 주세요.", "local": "Wi-Fiのパスワードを教えてください。", "roman": "와이파이노 파스와-도오 오시에테 쿠다사이."}, {"id": "hotel_clean", "cat": "호텔", "kr": "오늘 방 청소는 필요 없습니다.", "local": "今日は部屋の清掃は不要です。", "roman": "쿄-와 헤야노 세이소-와 후요-데스."}, {"id": "hotel_towel", "cat": "호텔", "kr": "수건을 한 장 더 주실 수 있나요?", "local": "タオルをもう一枚いただけますか？", "roman": "타오루오 모- 이치마이 이타다케마스카?"}, {"id": "hotel_hot", "cat": "호텔", "kr": "방이 너무 더워요.", "local": "部屋が暑すぎます。", "roman": "헤야가 아츠스기마스."}, {"id": "hotel_cold", "cat": "호텔", "kr": "방이 너무 추워요.", "local": "部屋が寒すぎます。", "roman": "헤야가 사무스기마스."}, {"id": "hotel_noise", "cat": "호텔", "kr": "옆방이 너무 시끄러워요.", "local": "隣の部屋がうるさいです。", "roman": "토나리노 헤야가 우루사이데스."}, {"id": "hotel_broken", "cat": "호텔", "kr": "이게 고장 난 것 같아요.", "local": "これが壊れているようです。", "roman": "코레가 코와레테이루 요-데스."}, {"id": "hotel_change", "cat": "호텔", "kr": "방을 바꿔 주실 수 있나요?", "local": "部屋を変えていただけますか？", "roman": "헤야오 카에테 이타다케마스카?"}, {"id": "hotel_breakfast", "cat": "호텔", "kr": "조식은 몇 시부터인가요?", "local": "朝食は何時からですか？", "roman": "쵸-쇼쿠와 난지카라데스카?"}, {"id": "hotel_late", "cat": "호텔", "kr": "늦게 체크아웃할 수 있나요?", "local": "レイトチェックアウトはできますか？", "roman": "레이토 쳇쿠아우토와 데키마스카?"}, {"id": "hotel_checkout", "cat": "호텔", "kr": "체크아웃 부탁드립니다.", "local": "チェックアウトをお願いします。", "roman": "쳇쿠아우토오 오네가이시마스."}, {"id": "hotel_taxi", "cat": "호텔", "kr": "택시를 불러 주실 수 있나요?", "local": "タクシーを呼んでいただけますか？", "roman": "타쿠시-오 욘데 이타다케마스카?"}, {"id": "tr_station", "cat": "교통", "kr": "가장 가까운 역이 어디예요?", "local": "一番近い駅はどこですか？", "roman": "이치반 치카이 에키와 도코데스카?"}, {"id": "tr_platform", "cat": "교통", "kr": "몇 번 승강장인가요?", "local": "何番ホームですか？", "roman": "난반 호-무데스카?"}, {"id": "tr_exit", "cat": "교통", "kr": "몇 번 출구로 나가야 하나요?", "local": "何番出口から出ればいいですか？", "roman": "난반 데구치카라 데레바 이이데스카?"}, {"id": "tr_thistrain", "cat": "교통", "kr": "이 열차가 여기로 가나요?", "local": "この電車はここに行きますか？", "roman": "코노 덴샤와 코코니 이키마스카?"}, {"id": "tr_transfer", "cat": "교통", "kr": "어디에서 갈아타나요?", "local": "どこで乗り換えますか？", "roman": "도코데 노리카에마스카?"}, {"id": "tr_express", "cat": "교통", "kr": "이건 급행인가요, 각역정차인가요?", "local": "これは急行ですか、各駅停車ですか？", "roman": "코레와 큐-코-데스카, 카쿠에키 테이샤데스카?"}, {"id": "tr_reserved", "cat": "교통", "kr": "지정석인가요?", "local": "指定席ですか？", "roman": "시테이세키데스카?"}, {"id": "tr_ticket", "cat": "교통", "kr": "이 표를 어떻게 쓰나요?", "local": "この切符はどう使いますか？", "roman": "코노 킷푸와 도- 츠카이마스카?"}, {"id": "tr_iccard", "cat": "교통", "kr": "교통카드를 충전하고 싶어요.", "local": "ICカードをチャージしたいです。", "roman": "아이시-카-도오 챠-지시타이데스."}, {"id": "tr_lasttrain", "cat": "교통", "kr": "막차가 몇 시예요?", "local": "終電は何時ですか？", "roman": "슈-덴와 난지데스카?"}, {"id": "tr_locker", "cat": "교통", "kr": "코인 로커가 어디예요?", "local": "コインロッカーはどこですか？", "roman": "코인 롯카-와 도코데스카?"}, {"id": "tr_bus", "cat": "교통", "kr": "이 버스가 여기로 가나요?", "local": "このバスはここに行きますか？", "roman": "코노 바스와 코코니 이키마스카?"}, {"id": "tr_busfare", "cat": "교통", "kr": "버스 요금은 어떻게 내나요?", "local": "バスの運賃はどうやって払いますか？", "roman": "바스노 운친와 도-얏테 하라이마스카?"}, {"id": "tr_getoff", "cat": "교통", "kr": "여기서 내리는 게 맞나요?", "local": "ここで降りればいいですか？", "roman": "코코데 오리레바 이이데스카?"}, {"id": "tr_wrongway", "cat": "교통", "kr": "반대 방향으로 온 것 같아요.", "local": "逆方向に乗ってしまったようです。", "roman": "갸쿠호-코-니 놋테시맛타 요-데스."}, {"id": "taxi_address", "cat": "택시", "kr": "이 주소로 가 주세요.", "local": "この住所までお願いします。", "roman": "코노 주-쇼마데 오네가이시마스."}, {"id": "taxi_map", "cat": "택시", "kr": "이 지도의 위치로 가 주세요.", "local": "この地図の場所までお願いします。", "roman": "코노 치즈노 바쇼마데 오네가이시마스."}, {"id": "taxi_stop", "cat": "택시", "kr": "여기서 세워 주세요.", "local": "ここで止めてください。", "roman": "코코데 토메테 쿠다사이."}, {"id": "taxi_time", "cat": "택시", "kr": "여기까지 얼마나 걸리나요?", "local": "ここまでどのくらいかかりますか？", "roman": "코코마데 도노쿠라이 카카리마스카?"}, {"id": "taxi_fare", "cat": "택시", "kr": "요금이 대략 얼마인가요?", "local": "料金はだいたいいくらですか？", "roman": "료-킨와 다이타이 이쿠라데스카?"}, {"id": "taxi_card", "cat": "택시", "kr": "카드로 결제할 수 있나요?", "local": "カードで払えますか？", "roman": "카-도데 하라에마스카?"}, {"id": "taxi_trunk", "cat": "택시", "kr": "트렁크를 열어 주세요.", "local": "トランクを開けてください。", "roman": "토랑쿠오 아케테 쿠다사이."}, {"id": "taxi_hurry", "cat": "택시", "kr": "조금 서둘러 주실 수 있나요?", "local": "少し急いでいただけますか？", "roman": "스코시 이소이데 이타다케마스카?"}, {"id": "eat_howmany", "cat": "식당", "kr": "인원은 이 숫자입니다.", "local": "人数はこの数字です。", "roman": "닌즈-와 코노 스-지데스."}, {"id": "eat_wait", "cat": "식당", "kr": "얼마나 기다려야 하나요?", "local": "どのくらい待ちますか？", "roman": "도노쿠라이 마치마스카?"}, {"id": "eat_reserve", "cat": "식당", "kr": "예약이 필요한가요?", "local": "予約は必要ですか？", "roman": "요야쿠와 히츠요-데스카?"}, {"id": "eat_menu", "cat": "식당", "kr": "메뉴판을 보여 주세요.", "local": "メニューを見せてください。", "roman": "메뉴-오 미세테 쿠다사이."}, {"id": "eat_menu_en", "cat": "식당", "kr": "한국어나 영어 메뉴가 있나요?", "local": "韓国語か英語のメニューはありますか？", "roman": "칸코쿠고카 에이고노 메뉴-와 아리마스카?"}, {"id": "eat_recommend", "cat": "식당", "kr": "추천 메뉴가 뭐예요?", "local": "おすすめは何ですか？", "roman": "오스스메와 난데스카?"}, {"id": "eat_this", "cat": "식당", "kr": "이걸로 주세요.", "local": "これをください。", "roman": "코레오 쿠다사이."}, {"id": "eat_same", "cat": "식당", "kr": "저 사람과 같은 걸로 주세요.", "local": "あの人と同じものをください。", "roman": "아노 히토토 오나지 모노오 쿠다사이."}, {"id": "eat_nospicy", "cat": "식당", "kr": "맵지 않게 해 주세요.", "local": "辛くしないでください。", "roman": "카라쿠 시나이데 쿠다사이."}, {"id": "eat_nowasabi", "cat": "식당", "kr": "고추냉이는 빼 주세요.", "local": "わさび抜きでお願いします。", "roman": "와사비 누키데 오네가이시마스."}, {"id": "eat_noraw", "cat": "식당", "kr": "날것은 먹지 못합니다.", "local": "生ものは食べられません。", "roman": "나마모노와 타베라레마센."}, {"id": "eat_noseafood", "cat": "식당", "kr": "해산물은 먹지 못합니다.", "local": "魚介類は食べられません。", "roman": "교카이루이와 타베라레마센."}, {"id": "eat_nopork", "cat": "식당", "kr": "돼지고기는 먹지 못합니다.", "local": "豚肉は食べられません。", "roman": "부타니쿠와 타베라레마센."}, {"id": "eat_less_oil", "cat": "식당", "kr": "기름을 적게 사용해 주세요.", "local": "油を少なめにしてください。", "roman": "아부라오 스쿠나메니 시테 쿠다사이."}, {"id": "eat_nobeef", "cat": "식당", "kr": "소고기는 먹지 않습니다.", "local": "牛肉は食べません。", "roman": "규-니쿠와 타베마센."}, {"id": "eat_vegetarian", "cat": "식당", "kr": "고기 없이 가능한 메뉴가 있나요?", "local": "肉なしで食べられるメニューはありますか？", "roman": "니쿠 나시데 타베라레루 메뉴-와 아리마스카?"}, {"id": "eat_nopeanut", "cat": "식당", "kr": "땅콩은 빼 주세요.", "local": "ピーナッツは入れないでください。", "roman": "피-낫츠와 이레나이데 쿠다사이."}, {"id": "eat_noegg", "cat": "식당", "kr": "달걀은 빼 주세요.", "local": "卵は入れないでください。", "roman": "타마고와 이레나이데 쿠다사이."}, {"id": "eat_nodairy", "cat": "식당", "kr": "우유나 유제품은 빼 주세요.", "local": "牛乳や乳製品は入れないでください。", "roman": "규-뉴-야 뉴-세이힌와 이레나이데 쿠다사이."}, {"id": "eat_allergen", "cat": "식당", "kr": "이 음식에 알레르기 유발 재료가 들어 있나요?", "local": "この料理にアレルギーの原因になる食材は入っていますか？", "roman": "코노 료-리니 아레루기-노 겐인니 나루 쇼쿠자이와 하잇테이마스카?"}, {"id": "eat_ingredient", "cat": "식당", "kr": "이 재료를 빼 주세요.", "local": "この材料は抜いてください。", "roman": "코노 자이료-와 누이테 쿠다사이."}, {"id": "eat_water", "cat": "식당", "kr": "물 주세요.", "local": "お水をお願いします。", "roman": "오미즈오 오네가이시마스."}, {"id": "eat_refill", "cat": "식당", "kr": "한 그릇 더 주세요.", "local": "おかわりをお願いします。", "roman": "오카와리오 오네가이시마스."}, {"id": "eat_share", "cat": "식당", "kr": "나눠 먹어도 되나요?", "local": "シェアしてもいいですか？", "roman": "셰아시테모 이이데스카?"}, {"id": "eat_howeat", "cat": "식당", "kr": "이건 어떻게 먹나요?", "local": "これはどうやって食べますか？", "roman": "코레와 도-얏테 타베마스카?"}, {"id": "eat_notorder", "cat": "식당", "kr": "이건 주문하지 않았어요.", "local": "これは注文していません。", "roman": "코레와 츄-몬시테이마센."}, {"id": "eat_slow", "cat": "식당", "kr": "주문한 게 아직 안 나왔어요.", "local": "注文したものがまだ来ていません。", "roman": "츄-몬시타 모노가 마다 키테이마센."}, {"id": "eat_bill", "cat": "식당", "kr": "계산 부탁드려요.", "local": "お会計をお願いします。", "roman": "오카이케이오 오네가이시마스."}, {"id": "eat_split", "cat": "식당", "kr": "따로 계산할 수 있나요?", "local": "別々に払えますか？", "roman": "베츠베츠니 하라에마스카?"}, {"id": "eat_takeout", "cat": "식당", "kr": "포장해 주세요.", "local": "持ち帰りでお願いします。", "roman": "모치카에리데 오네가이시마스."}, {"id": "eat_delicious", "cat": "식당", "kr": "정말 맛있었습니다.", "local": "とても美味しかったです。", "roman": "토테모 오이시캇타데스."}, {"id": "cafe_here", "cat": "카페", "kr": "여기서 마실게요.", "local": "店内でお願いします。", "roman": "텐나이데 오네가이시마스."}, {"id": "cafe_togo", "cat": "카페", "kr": "가지고 갈게요.", "local": "持ち帰りでお願いします。", "roman": "모치카에리데 오네가이시마스."}, {"id": "cafe_ice", "cat": "카페", "kr": "아이스로 주세요.", "local": "アイスでお願いします。", "roman": "아이스데 오네가이시마스."}, {"id": "cafe_hot", "cat": "카페", "kr": "따뜻한 걸로 주세요.", "local": "ホットでお願いします。", "roman": "홋토데 오네가이시마스."}, {"id": "cafe_less_sweet", "cat": "카페", "kr": "덜 달게 해 주세요.", "local": "甘さを控えめにしてください。", "roman": "아마사오 히카에메니 시테 쿠다사이."}, {"id": "cafe_outlet", "cat": "카페", "kr": "콘센트를 써도 되나요?", "local": "コンセントを使ってもいいですか？", "roman": "콘센토오 츠캇테모 이이데스카?"}, {"id": "cafe_seat", "cat": "카페", "kr": "이 자리에 앉아도 되나요?", "local": "この席に座ってもいいですか？", "roman": "코노 세키니 스왓테모 이이데스카?"}, {"id": "bar_beer", "cat": "술집", "kr": "생맥주 주세요.", "local": "生ビールをください。", "roman": "나마 비-루오 쿠다사이."}, {"id": "bar_sake", "cat": "술집", "kr": "이 지역 술을 추천해 주세요.", "local": "この地域のお酒をおすすめしてください。", "roman": "코노 치이키노 오사케오 오스스메시테 쿠다사이."}, {"id": "bar_charge", "cat": "술집", "kr": "자릿세가 있나요?", "local": "お通し代はかかりますか？", "roman": "오토-시다이와 카카리마스카?"}, {"id": "bar_lastorder", "cat": "술집", "kr": "라스트 오더가 몇 시예요?", "local": "ラストオーダーは何時ですか？", "roman": "라스토 오-다-와 난지데스카?"}, {"id": "bar_nodrink", "cat": "술집", "kr": "술은 못 마셔요.", "local": "お酒は飲めません。", "roman": "오사케와 노메마센."}, {"id": "bar_water", "cat": "술집", "kr": "물 한 잔 주세요.", "local": "お水を一杯ください。", "roman": "오미즈오 잇파이 쿠다사이."}, {"id": "cvs_heat", "cat": "편의점", "kr": "이거 데워 주세요.", "local": "これを温めてください。", "roman": "코레오 아타타메테 쿠다사이."}, {"id": "cvs_bag", "cat": "편의점", "kr": "봉투 주세요.", "local": "袋をください。", "roman": "후쿠로오 쿠다사이."}, {"id": "cvs_nobag", "cat": "편의점", "kr": "봉투는 괜찮아요.", "local": "袋はいりません。", "roman": "후쿠로와 이리마센."}, {"id": "cvs_chopstick", "cat": "편의점", "kr": "젓가락을 넣어 주세요.", "local": "お箸を入れてください。", "roman": "오하시오 이레테 쿠다사이."}, {"id": "cvs_separate", "cat": "편의점", "kr": "따로 담아 주세요.", "local": "別々に入れてください。", "roman": "베츠베츠니 이레테 쿠다사이."}, {"id": "cvs_atm", "cat": "편의점", "kr": "ATM이 어디에 있나요?", "local": "ATMはどこにありますか？", "roman": "에이티-에무와 도코니 아리마스카?"}, {"id": "cvs_ticket", "cat": "편의점", "kr": "여기서 티켓을 발권할 수 있나요?", "local": "ここでチケットを発券できますか？", "roman": "코코데 치켓토오 핫켄데키마스카?"}, {"id": "shop_looking", "cat": "쇼핑", "kr": "그냥 구경하는 중이에요.", "local": "見ているだけです。", "roman": "미테이루 다케데스."}, {"id": "shop_size", "cat": "쇼핑", "kr": "다른 사이즈가 있나요?", "local": "別のサイズはありますか？", "roman": "베츠노 사이즈와 아리마스카?"}, {"id": "shop_color", "cat": "쇼핑", "kr": "다른 색도 있나요?", "local": "別の色もありますか？", "roman": "베츠노 이로모 아리마스카?"}, {"id": "shop_stock", "cat": "쇼핑", "kr": "재고가 있나요?", "local": "在庫はありますか？", "roman": "자이코와 아리마스카?"}, {"id": "shop_try", "cat": "쇼핑", "kr": "입어봐도 되나요?", "local": "試着してもいいですか？", "roman": "시챠쿠시테모 이이데스카?"}, {"id": "shop_price", "cat": "쇼핑", "kr": "이건 얼마예요?", "local": "これはいくらですか？", "roman": "코레와 이쿠라데스카?"}, {"id": "shop_taxfree", "cat": "쇼핑", "kr": "면세가 가능한가요?", "local": "免税できますか？", "roman": "멘제이 데키마스카?"}, {"id": "shop_passport", "cat": "쇼핑", "kr": "여권이 필요한가요?", "local": "パスポートは必要ですか？", "roman": "파스포-토와 히츠요-데스카?"}, {"id": "shop_wrap", "cat": "쇼핑", "kr": "선물 포장 가능한가요?", "local": "プレゼント包装できますか？", "roman": "푸레젠토 호-소- 데키마스카?"}, {"id": "shop_return", "cat": "쇼핑", "kr": "교환이나 환불이 가능한가요?", "local": "交換や返品はできますか？", "roman": "코-칸야 헨핀와 데키마스카?"}, {"id": "shop_ship", "cat": "쇼핑", "kr": "호텔로 배송해 주실 수 있나요?", "local": "ホテルまで配送していただけますか？", "roman": "호테루마데 하이소-시테 이타다케마스카?"}, {"id": "shop_hold", "cat": "쇼핑", "kr": "잠깐 맡아 주실 수 있나요?", "local": "少し預かっていただけますか？", "roman": "스코시 아즈캇테 이타다케마스카?"}, {"id": "pay_card", "cat": "결제", "kr": "카드로 결제할 수 있나요?", "local": "カードで払えますか？", "roman": "카-도데 하라에마스카?"}, {"id": "pay_cash", "cat": "결제", "kr": "현금만 되나요?", "local": "現金だけですか？", "roman": "겐킨다케 데스카?"}, {"id": "pay_qr", "cat": "결제", "kr": "QR 결제도 되나요?", "local": "QR決済も使えますか？", "roman": "큐-아-루 켓사이모 츠카에마스카?"}, {"id": "pay_ic", "cat": "결제", "kr": "교통카드로 결제할 수 있나요?", "local": "交通系ICで払えますか？", "roman": "코-츠-케이 아이시-데 하라에마스카?"}, {"id": "pay_receipt", "cat": "결제", "kr": "영수증 주세요.", "local": "レシートをください。", "roman": "레시-토오 쿠다사이."}, {"id": "pay_wrong", "cat": "결제", "kr": "금액이 잘못된 것 같아요.", "local": "金額が違うようです。", "roman": "킨가쿠가 치가우 요-데스."}, {"id": "pay_change", "cat": "결제", "kr": "거스름돈이 부족한 것 같아요.", "local": "おつりが足りないようです。", "roman": "오츠리가 타리나이 요-데스."}, {"id": "pay_split_pay", "cat": "결제", "kr": "반반씩 나눠서 결제할 수 있나요?", "local": "半分ずつ払えますか？", "roman": "한분즈츠 하라에마스카?"}, {"id": "see_ticket", "cat": "관광", "kr": "표는 어디에서 사나요?", "local": "チケットはどこで買えますか？", "roman": "치켓토와 도코데 카에마스카?"}, {"id": "see_open", "cat": "관광", "kr": "몇 시까지 열려 있나요?", "local": "何時まで開いていますか？", "roman": "난지마데 아이테이마스카?"}, {"id": "see_closed", "cat": "관광", "kr": "오늘 쉬는 날인가요?", "local": "今日は休みですか？", "roman": "쿄-와 야스미데스카?"}, {"id": "see_line", "cat": "관광", "kr": "줄은 어디에서 서나요?", "local": "列はどこに並びますか？", "roman": "레츠와 도코니 나라비마스카?"}, {"id": "see_photo", "cat": "관광", "kr": "사진 찍어도 되나요?", "local": "写真を撮ってもいいですか？", "roman": "샤신오 톳테모 이이데스카?"}, {"id": "see_shoes", "cat": "관광", "kr": "신발을 벗어야 하나요?", "local": "靴を脱ぐ必要がありますか？", "roman": "쿠츠오 누구 히츠요-가 아리마스카?"}, {"id": "see_guide", "cat": "관광", "kr": "한국어 안내가 있나요?", "local": "韓国語の案内はありますか？", "roman": "칸코쿠고노 안나이와 아리마스카?"}, {"id": "see_where", "cat": "관광", "kr": "여기가 어디인가요?", "local": "ここはどこですか？", "roman": "코코와 도코데스카?"}, {"id": "see_howlong", "cat": "관광", "kr": "걸어서 갈 수 있나요?", "local": "歩いて行けますか？", "roman": "아루이테 이케마스카?"}, {"id": "pic_me", "cat": "사진", "kr": "제 사진 한 장만 찍어주실 수 있나요?", "local": "写真を一枚撮っていただけますか？", "roman": "샤신오 이치마이 톳테 이타다케마스카?"}, {"id": "pic_button", "cat": "사진", "kr": "이 버튼만 눌러 주시면 됩니다.", "local": "このボタンを押すだけです。", "roman": "코노 보탄오 오스다케데스."}, {"id": "pic_background", "cat": "사진", "kr": "저 건물이 나오게 찍어 주세요.", "local": "あの建物が入るように撮ってください。", "roman": "아노 타테모노가 하이루 요-니 톳테 쿠다사이."}, {"id": "pic_again", "cat": "사진", "kr": "한 장만 더 부탁드려요.", "local": "もう一枚お願いします。", "roman": "모- 이치마이 오네가이시마스."}, {"id": "pic_together", "cat": "사진", "kr": "같이 찍어도 될까요?", "local": "一緒に撮ってもいいですか？", "roman": "잇쇼니 톳테모 이이데스카?"}, {"id": "spa_first", "cat": "온천", "kr": "처음이라 이용 방법을 모르겠어요.", "local": "初めてなので使い方がわかりません。", "roman": "하지메테나노데 츠카이카타가 와카리마센."}, {"id": "spa_tattoo", "cat": "온천", "kr": "문신이 있어도 들어갈 수 있나요?", "local": "タトゥーがあっても入れますか？", "roman": "타투-가 앗테모 하이레마스카?"}, {"id": "spa_towel", "cat": "온천", "kr": "수건은 어디서 받나요?", "local": "タオルはどこでもらえますか？", "roman": "타오루와 도코데 모라에마스카?"}, {"id": "spa_locker", "cat": "온천", "kr": "이 사물함을 써도 되나요?", "local": "このロッカーを使ってもいいですか？", "roman": "코노 롯카-오 츠캇테모 이이데스카?"}, {"id": "spa_time", "cat": "온천", "kr": "이용 시간이 얼마나 되나요?", "local": "利用時間はどのくらいですか？", "roman": "리요- 지칸와 도노쿠라이데스카?"}, {"id": "med_hospital", "cat": "병원·약국", "kr": "병원이 어디예요?", "local": "病院はどこですか？", "roman": "뵤-인와 도코데스카?"}, {"id": "med_pharmacy", "cat": "병원·약국", "kr": "약국이 어디예요?", "local": "薬局はどこですか？", "roman": "얏쿄쿠와 도코데스카?"}, {"id": "med_pain", "cat": "병원·약국", "kr": "여기가 아픕니다.", "local": "ここが痛いです。", "roman": "코코가 이타이데스."}, {"id": "med_fever", "cat": "병원·약국", "kr": "열이 납니다.", "local": "熱があります。", "roman": "네츠가 아리마스."}, {"id": "med_cold", "cat": "병원·약국", "kr": "감기 기운이 있습니다.", "local": "風邪気味です。", "roman": "카제기미데스."}, {"id": "med_stomach", "cat": "병원·약국", "kr": "배가 아픕니다.", "local": "お腹が痛いです。", "roman": "오나카가 이타이데스."}, {"id": "med_headache", "cat": "병원·약국", "kr": "머리가 아픕니다.", "local": "頭が痛いです。", "roman": "아타마가 이타이데스."}, {"id": "med_medicine", "cat": "병원·약국", "kr": "이 증상에 맞는 약을 주세요.", "local": "この症状に合う薬をください。", "roman": "코노 쇼-죠-니 아우 쿠스리오 쿠다사이."}, {"id": "med_allergy", "cat": "병원·약국", "kr": "알레르기가 있습니다.", "local": "アレルギーがあります。", "roman": "아레루기-가 아리마스."}, {"id": "med_insurance", "cat": "병원·약국", "kr": "여행자 보험이 있습니다.", "local": "旅行保険に入っています。", "roman": "료코- 호켄니 하잇테이마스."}, {"id": "med_korean", "cat": "병원·약국", "kr": "한국어가 되는 분이 계신가요?", "local": "韓国語が話せる方はいますか？", "roman": "칸코쿠고가 하나세루 카타와 이마스카?"}, {"id": "med_ambulance", "cat": "병원·약국", "kr": "구급차를 불러 주세요.", "local": "救急車を呼んでください。", "roman": "큐-큐-샤오 욘데 쿠다사이."}, {"id": "net_sim", "cat": "통신·환전", "kr": "유심을 사고 싶어요.", "local": "SIMカードを買いたいです。", "roman": "심 카-도오 카이타이데스."}, {"id": "net_setup", "cat": "통신·환전", "kr": "설정을 도와주실 수 있나요?", "local": "設定を手伝っていただけますか？", "roman": "셋테이오 테츠닷테 이타다케마스카?"}, {"id": "net_wifi", "cat": "통신·환전", "kr": "무료 와이파이가 있나요?", "local": "無料Wi-Fiはありますか？", "roman": "무료- 와이파이와 아리마스카?"}, {"id": "net_exchange", "cat": "통신·환전", "kr": "환전을 하고 싶습니다.", "local": "両替をしたいです。", "roman": "료-가에오 시타이데스."}, {"id": "net_rate", "cat": "통신·환전", "kr": "환율이 어떻게 되나요?", "local": "レートはいくらですか？", "roman": "레-토와 이쿠라데스카?"}, {"id": "net_smallbill", "cat": "통신·환전", "kr": "잔돈으로 바꿔 주세요.", "local": "小さいお金に替えてください。", "roman": "치이사이 오카네니 카에테 쿠다사이."}, {"id": "net_atm", "cat": "통신·환전", "kr": "해외 카드가 되는 ATM이 어디예요?", "local": "海外カードが使えるATMはどこですか？", "roman": "카이가이 카-도가 츠카에루 에이티-에무와 도코데스카?"}, {"id": "bag_coin", "cat": "짐·세탁", "kr": "코인 세탁실이 어디예요?", "local": "コインランドリーはどこですか？", "roman": "코인 란도리-와 도코데스카?"}, {"id": "bag_how", "cat": "짐·세탁", "kr": "이 기계 사용법을 알려 주세요.", "local": "この機械の使い方を教えてください。", "roman": "코노 키카이노 츠카이카타오 오시에테 쿠다사이."}, {"id": "bag_delivery", "cat": "짐·세탁", "kr": "이 짐을 다음 숙소로 보낼 수 있나요?", "local": "この荷物を次の宿に送れますか？", "roman": "코노 니모츠오 츠기노 야도니 오쿠레마스카?"}, {"id": "bag_when", "cat": "짐·세탁", "kr": "언제 도착하나요?", "local": "いつ届きますか？", "roman": "이츠 토도키마스카?"}, {"id": "kid_seat", "cat": "아이·동반", "kr": "아이 의자가 있나요?", "local": "子供用の椅子はありますか？", "roman": "코도모요-노 이스와 아리마스카?"}, {"id": "kid_stroller", "cat": "아이·동반", "kr": "유모차를 가지고 들어가도 되나요?", "local": "ベビーカーで入っても大丈夫ですか？", "roman": "베비-카-데 하잇테모 다이죠부데스카?"}, {"id": "kid_nursing", "cat": "아이·동반", "kr": "수유실이 어디예요?", "local": "授乳室はどこですか？", "roman": "쥬뉴-시츠와 도코데스카?"}, {"id": "kid_elevator", "cat": "아이·동반", "kr": "엘리베이터가 어디예요?", "local": "エレベーターはどこですか？", "roman": "에레베-타-와 도코데스카?"}, {"id": "grp_meeting", "cat": "집결", "kr": "집결 장소가 어디예요?", "local": "集合場所はどこですか？", "roman": "슈-고- 바쇼와 도코데스카?"}, {"id": "grp_time", "cat": "집결", "kr": "몇 시까지 돌아오면 되나요?", "local": "何時までに戻ればいいですか？", "roman": "난지마데니 모도레바 이이데스카?"}, {"id": "grp_late", "cat": "집결", "kr": "죄송합니다. 조금 늦을 것 같아요.", "local": "すみません、少し遅れそうです。", "roman": "스미마센, 스코시 오쿠레소-데스."}, {"id": "grp_bus", "cat": "집결", "kr": "우리 버스가 어느 것인가요?", "local": "私たちのバスはどれですか？", "roman": "와타시타치노 바스와 도레데스카?"}, {"id": "grp_contact", "cat": "집결", "kr": "연락처를 알려 주세요.", "local": "連絡先を教えてください。", "roman": "렌라쿠사키오 오시에테 쿠다사이."}, {"id": "util_toilet", "cat": "편의", "kr": "화장실이 어디예요?", "local": "トイレはどこですか？", "roman": "토이레와 도코데스카?"}, {"id": "util_charge", "cat": "편의", "kr": "휴대폰 충전할 곳이 있나요?", "local": "スマホを充電できる場所はありますか？", "roman": "스마호오 쥬-덴데키루 바쇼와 아리마스카?"}, {"id": "util_smoke", "cat": "편의", "kr": "흡연 구역이 어디예요?", "local": "喫煙所はどこですか？", "roman": "키츠엔죠와 도코데스카?"}, {"id": "util_trash", "cat": "편의", "kr": "쓰레기통이 어디예요?", "local": "ゴミ箱はどこですか？", "roman": "고미바코와 도코데스카?"}, {"id": "util_water", "cat": "편의", "kr": "물을 어디서 살 수 있나요?", "local": "水はどこで買えますか？", "roman": "미즈와 도코데 카에마스카?"}, {"id": "util_umbrella", "cat": "편의", "kr": "우산을 어디서 살 수 있나요?", "local": "傘はどこで買えますか？", "roman": "카사와 도코데 카에마스카?"}, {"id": "util_sit", "cat": "편의", "kr": "잠깐 앉아 있어도 될까요?", "local": "少し座ってもいいですか？", "roman": "스코시 스왓테모 이이데스카?"}, {"id": "sos_lost", "cat": "분실·긴급", "kr": "길을 잃었습니다.", "local": "道に迷いました。", "roman": "미치니 마요이마시타."}, {"id": "sos_item", "cat": "분실·긴급", "kr": "물건을 잃어버렸습니다.", "local": "物をなくしました。", "roman": "모노오 나쿠시마시타."}, {"id": "sos_phone", "cat": "분실·긴급", "kr": "휴대폰을 잃어버렸습니다.", "local": "スマホをなくしました。", "roman": "스마호오 나쿠시마시타."}, {"id": "sos_wallet", "cat": "분실·긴급", "kr": "지갑을 잃어버렸습니다.", "local": "財布をなくしました。", "roman": "사이후오 나쿠시마시타."}, {"id": "sos_passport", "cat": "분실·긴급", "kr": "여권을 잃어버렸습니다.", "local": "パスポートをなくしました。", "roman": "파스포-토오 나쿠시마시타."}, {"id": "sos_lostoffice", "cat": "분실·긴급", "kr": "분실물 센터가 어디예요?", "local": "忘れ物センターはどこですか？", "roman": "와스레모노 센타-와 도코데스카?"}, {"id": "sos_police", "cat": "분실·긴급", "kr": "경찰을 불러 주세요.", "local": "警察を呼んでください。", "roman": "케이사츠오 욘데 쿠다사이."}, {"id": "sos_help", "cat": "분실·긴급", "kr": "도와주세요.", "local": "助けてください。", "roman": "타스케테 쿠다사이."}, {"id": "sos_embassy", "cat": "분실·긴급", "kr": "한국 대사관에 연락하고 싶습니다.", "local": "韓国大使館に連絡したいです。", "roman": "칸코쿠 타이시칸니 렌라쿠시타이데스."}, {"id": "sos_phone_call", "cat": "분실·긴급", "kr": "전화를 한 통 빌릴 수 있을까요?", "local": "電話を一本お借りできますか？", "roman": "덴와오 잇폰 오카리데키마스카?"}, {"id": "sos_stranger", "cat": "분실·긴급", "kr": "이 사람이 저를 따라옵니다.", "local": "この人に付きまとわれています。", "roman": "코노 히토니 츠키마토와레테이마스."}, {"id": "nope_no", "cat": "거절·사과", "kr": "괜찮습니다. 필요 없어요.", "local": "結構です。必要ありません。", "roman": "켓코-데스. 히츠요- 아리마센."}, {"id": "nope_notbuy", "cat": "거절·사과", "kr": "오늘은 사지 않을게요.", "local": "今日は買いません。", "roman": "쿄-와 카이마센."}, {"id": "nope_alone", "cat": "거절·사과", "kr": "혼자 있고 싶습니다.", "local": "一人にしてください。", "roman": "히토리니 시테 쿠다사이."}, {"id": "nope_stop", "cat": "거절·사과", "kr": "그만해 주세요.", "local": "やめてください。", "roman": "야메테 쿠다사이."}, {"id": "nope_mistake", "cat": "거절·사과", "kr": "제가 실수했습니다. 죄송합니다.", "local": "私の間違いです。申し訳ありません。", "roman": "와타시노 마치가이데스. 모-시와케 아리마센."}, {"id": "nope_didnt", "cat": "거절·사과", "kr": "몰라서 그랬습니다. 죄송합니다.", "local": "知らずにやってしまいました。すみません。", "roman": "시라즈니 얏테시마이마시타. 스미마센."}], CHOICES=[{"localQ": "どちらですか？", "krQ": "어느 쪽인가요?", "answers": [{"local": "左", "kr": "왼쪽"}, {"local": "右", "kr": "오른쪽"}, {"local": "まっすぐ", "kr": "직진"}, {"local": "上の階", "kr": "위층"}, {"local": "下の階", "kr": "아래층"}, {"local": "すぐそこ", "kr": "바로 저기"}]}, {"localQ": "何時ごろですか？", "krQ": "몇 시쯤인가요?", "answers": [{"local": "今すぐ", "kr": "지금 바로"}, {"local": "10分後", "kr": "10분 후"}, {"local": "30分後", "kr": "30분 후"}, {"local": "1時間後", "kr": "1시간 후"}, {"local": "それ以降", "kr": "그 이후"}]}, {"localQ": "どのくらい待ちますか？", "krQ": "얼마나 기다려야 하나요?", "answers": [{"local": "5分", "kr": "5분"}, {"local": "10分", "kr": "10분"}, {"local": "20分", "kr": "20분"}, {"local": "30分以上", "kr": "30분 이상"}, {"local": "わかりません", "kr": "알 수 없음"}]}, {"localQ": "どの支払い方法が使えますか？", "krQ": "어떤 결제수단이 되나요?", "answers": [{"local": "現金", "kr": "현금"}, {"local": "クレジットカード", "kr": "신용카드"}, {"local": "交通系IC", "kr": "교통카드"}, {"local": "QR決済", "kr": "QR 결제"}, {"local": "現金のみ", "kr": "현금만"}]}, {"localQ": "店内ですか？持ち帰りですか？", "krQ": "매장인가요, 포장인가요?", "answers": [{"local": "店内", "kr": "매장에서 먹기"}, {"local": "持ち帰り", "kr": "포장"}]}, {"localQ": "ありますか？", "krQ": "있나요?", "answers": [{"local": "あります", "kr": "있어요"}, {"local": "ありません", "kr": "없어요"}, {"local": "確認します", "kr": "확인해볼게요"}, {"local": "入荷待ち", "kr": "입고 대기 중"}]}, {"localQ": "写真は大丈夫ですか？", "krQ": "사진 촬영 가능한가요?", "answers": [{"local": "大丈夫です", "kr": "가능해요"}, {"local": "フラッシュ禁止", "kr": "플래시 금지"}, {"local": "撮影禁止", "kr": "촬영 금지"}, {"local": "ここだけ可", "kr": "여기만 가능"}]}, {"localQ": "何番ですか？", "krQ": "몇 번인가요?", "answers": [{"local": "1番", "kr": "1번"}, {"local": "2番", "kr": "2번"}, {"local": "3番", "kr": "3번"}, {"local": "4番", "kr": "4번"}, {"local": "5番", "kr": "5번"}, {"local": "6番以上", "kr": "6번 이상"}]}, {"localQ": "どこで待てばいいですか？", "krQ": "어디에서 기다리면 되나요?", "answers": [{"local": "ここ", "kr": "여기"}, {"local": "入口", "kr": "입구"}, {"local": "ロビー", "kr": "로비"}, {"local": "外", "kr": "밖"}, {"local": "別の場所", "kr": "다른 곳"}]}, {"localQ": "どうしますか？", "krQ": "어떻게 할까요?", "answers": [{"local": "はい", "kr": "네"}, {"local": "いいえ", "kr": "아니요"}, {"local": "少し待って", "kr": "조금만 기다려요"}, {"local": "わかりません", "kr": "모르겠어요"}]}, {"localQ": "この後どうなりますか？", "krQ": "이다음은 어떻게 되나요?", "answers": [{"local": "そのままお待ちを", "kr": "그대로 기다리세요"}, {"local": "こちらへどうぞ", "kr": "이쪽으로 오세요"}, {"local": "後で呼びます", "kr": "나중에 부를게요"}, {"local": "終わりです", "kr": "끝났습니다"}]}, {"localQ": "料金はどうなりますか？", "krQ": "요금은 어떻게 되나요?", "answers": [{"local": "無料", "kr": "무료"}, {"local": "追加料金あり", "kr": "추가 요금 있음"}, {"local": "前払い", "kr": "선불"}, {"local": "後払い", "kr": "후불"}]}], SCENES=[{"title": "택시 타고 목적지 가기", "icon": "🚕", "ids": ["taxi_address", "taxi_time", "taxi_fare", "taxi_card", "taxi_stop"]}, {"title": "식당 들어가서 계산까지", "icon": "🍜", "ids": ["eat_howmany", "eat_wait", "eat_menu_en", "eat_recommend", "eat_nospicy", "eat_water", "eat_bill"]}, {"title": "호텔 체크인", "icon": "🏨", "ids": ["hotel_checkin", "hotel_reserved", "hotel_early", "hotel_luggage", "hotel_wifi", "hotel_breakfast"]}, {"title": "지하철·기차 타기", "icon": "🚉", "ids": ["tr_station", "tr_thistrain", "tr_platform", "tr_transfer", "tr_exit", "tr_lasttrain"]}, {"title": "가게에서 물건 사기", "icon": "🛍️", "ids": ["shop_price", "shop_size", "shop_try", "shop_taxfree", "pay_card", "pay_receipt"]}, {"title": "몸이 아플 때", "icon": "🏥", "ids": ["med_pain", "med_fever", "med_allergy", "med_medicine", "med_korean", "med_hospital"]}, {"title": "길 물어보기", "icon": "🧭", "ids": ["see_where", "basic_point", "see_howlong", "basic_slow", "basic_write"]}, {"title": "사진 부탁하기", "icon": "📷", "ids": ["pic_me", "pic_button", "pic_background", "pic_again", "basic_thanks"]}], SOSNUM=[{"label": "경찰", "num": "110", "desc": "일본 경찰 신고 번호"}, {"label": "화재·구급", "num": "119", "desc": "소방 및 구급차 호출"}, {"label": "해양 사고", "num": "118", "desc": "해상 긴급 신고"}, {"label": "영사콜센터", "num": "+82-2-3210-0404", "desc": "24시간 한국어 상담"}], SOSCARD=[{"kr": "이 사람은 한국인 관광객입니다. 일본어를 하지 못합니다.", "local": "この人は韓国人観光客です。日本語が話せません。"}, {"kr": "도와주세요. 응급 상황입니다.", "local": "助けてください。緊急です。"}, {"kr": "구급차를 불러 주세요.", "local": "救急車を呼んでください。"}, {"kr": "경찰을 불러 주세요.", "local": "警察を呼んでください。"}, {"kr": "한국 대사관에 연락해 주세요.", "local": "韓国大使館に連絡してください。"}, {"kr": "여기 적힌 곳으로 데려다 주세요.", "local": "ここに書いてある場所へ連れて行ってください。"}];
+const LANG="ja-JP", KEY="svja3.";
+const REPLIES=[{"local": "はい", "kr": "네, 맞아요"}, {"local": "いいえ", "kr": "아니요"}, {"local": "少し待って", "kr": "조금만 기다려 주세요"}, {"local": "わかりません", "kr": "저도 잘 모르겠어요"}];
+
+const $=id=>document.getElementById(id);
+const attr=s=>esc(JSON.stringify(String(s)));
+const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const byId=Object.fromEntries(PHRASES.map(p=>[p.id,p]));
+
+/* ── state */
+const store={
+  get(k,d){try{const v=localStorage.getItem(KEY+k);return v===null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(KEY+k,JSON.stringify(v))}catch(e){}}
+};
+let favs=new Set(store.get('favs',[]));
+let recent=store.get('recent',[]);
+let cfg=Object.assign({theme:'auto',size:'m',rom:true,rate:0.85},store.get('cfg',{}));
+let tab='phrases', cat='전체', query='';
+
+/* ── settings */
+function applyCfg(){
+  const t=cfg.theme==='auto'?(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'):cfg.theme;
+  document.documentElement.dataset.theme=t;
+  document.documentElement.style.setProperty('--fs',{s:.92,m:1,l:1.14,xl:1.3}[cfg.size]||1);
+  store.set('cfg',cfg);
+}
+function seg(el,opts,cur,fn){
+  el.innerHTML=opts.map(o=>`<button aria-pressed="${o[0]===cur}" data-v="${o[0]}">${o[1]}</button>`).join('');
+  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{fn(b.dataset.v);buildSheet()});
+}
+function buildSheet(){
+  seg($('segTheme'),[['auto','자동'],['light','밝게'],['dark','어둡게']],cfg.theme,v=>{cfg.theme=v;applyCfg()});
+  seg($('segSize'),[['m','보통'],['l','크게'],['xl','아주 크게']],cfg.size,v=>{cfg.size=v;applyCfg()});
+  seg($('segRom'),[[true,'표시'],[false,'숨김']],cfg.rom,v=>{cfg.rom=(v==='true');applyCfg();render()});
+  seg($('segRate'),[[0.7,'느리게'],[0.85,'보통'],[1,'빠르게']],cfg.rate,v=>{cfg.rate=parseFloat(v);applyCfg()});
+}
+function openSheet(){buildSheet();$('sheet').classList.add('on')}
+function closeSheet(){$('sheet').classList.remove('on')}
+
+/* ── speech */
+function speak(t){
+  if(!t)return;
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=LANG;u.rate=cfg.rate;speechSynthesis.speak(u)}
+  catch(e){}
+}
+
+/* ── signboard */
+let BST={local:'',kr:'',rom:'',list:[],i:-1};
+function openBoard(local,kr,rom,list,i,isSos){
+  BST={local,kr,rom:rom||'',list:list||[],i:i===undefined?-1:i};
+  $('bLocal').textContent=local;
+  $('bKr').textContent=kr||'';
+  $('bRom').textContent=(cfg.rom&&rom)?rom:'';
+  $('bReply').classList.remove('on');
+  $('board').classList.toggle('sos',!!isSos);
+  $('bRep').innerHTML=REPLIES.map((r,j)=>`<button onclick="reply(${j})">${esc(r.local)}</button>`).join('');
+  $('board').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+function openPhrase(id,list){
+  const p=byId[id];if(!p)return;
+  recent=[id,...recent.filter(x=>x!==id)].slice(0,12);store.set('recent',recent);
+  const L=list&&list.length?list:[id];
+  openBoard(p.local,p.kr,p.roman,L,L.indexOf(id));
+}
+function boardStep(d){
+  if(BST.i<0||BST.list.length<2)return;
+  const n=(BST.i+d+BST.list.length)%BST.list.length;
+  openPhrase(BST.list[n],BST.list);
+}
+function reply(j){
+  const r=REPLIES[j],el=$('bReply');
+  el.querySelector('b').textContent=r.kr;
+  el.querySelector('span').textContent=r.local;
+  el.classList.add('on');
+}
+function closeBoard(){$('board').classList.remove('on');document.body.style.overflow=''}
+addEventListener('keydown',e=>{
+  if(!$('board').classList.contains('on'))return;
+  if(e.key==='Escape')closeBoard();
+  if(e.key==='ArrowRight')boardStep(1);
+  if(e.key==='ArrowLeft')boardStep(-1);
+});
+
+/* ── favorites */
+function toggleFav(e,id){e.stopPropagation();favs.has(id)?favs.delete(id):favs.add(id);store.set('favs',[...favs]);render()}
+
+/* ── rendering pieces */
+function cardHTML(p,listJson){
+  return `<div class="pc${favs.has(p.id)?' fav':''}">
+    <span class="bar"></span>
+    <button class="body" onclick='openPhrase("${p.id}",${listJson})'>
+      <span class="kr">${esc(p.kr)}</span>
+      <span class="local loc">${esc(p.local)}</span>
+      ${cfg.rom&&p.roman?`<span class="rom">${esc(p.roman)}</span>`:''}
+    </button>
+    <div class="side">
+      <button onclick='event.stopPropagation();speak(${JSON.stringify(p.local)})' aria-label="읽어주기">🔊</button>
+      <button class="${favs.has(p.id)?'on':''}" onclick="toggleFav(event,'${p.id}')" aria-label="즐겨찾기">${favs.has(p.id)?'★':'☆'}</button>
+    </div>
+  </div>`;
+}
+function listHTML(items){
+  if(!items.length)return '';
+  const ids=JSON.stringify(items.map(p=>p.id)).replace(/"/g,'&quot;');
+  return `<div class="list">${items.map(p=>cardHTML(p,ids)).join('')}</div>`;
+}
+function head(t){return `<div class="sect"><i></i><h2>${esc(t)}</h2></div>`}
+
+/* ── tabs */
+const CATS=['전체','최근',...new Set(PHRASES.map(p=>p.cat))];
+
+function viewPhrases(){
+  let html=`<div class="searchbar">
+    <input id="q" placeholder="찾기: 화장실, 계산, 아파요, 몇 시…" value="${esc(query)}" oninput="query=this.value;render(true)">
+    <div class="chips" id="chips">${CATS.map(c=>`<button class="chip" aria-pressed="${c===cat}" onclick="cat='${c}';render()">${esc(c)}</button>`).join('')}</div>
+  </div>`;
+  let items;
+  if(cat==='최근'){items=recent.map(id=>byId[id]).filter(Boolean)}
+  else{items=PHRASES.filter(p=>cat==='전체'||p.cat===cat)}
+  if(query.trim()){
+    const q=query.trim().toLowerCase();
+    items=PHRASES.filter(p=>(p.kr+' '+p.local+' '+(p.roman||'')+' '+p.cat).toLowerCase().includes(q));
+  }
+  if(!items.length){
+    html+=`<div class="empty"><b>${cat==='최근'?'아직 사용한 문장이 없어요':'찾는 문장이 없어요'}</b>${cat==='최근'?'문장을 한 번 열어보면 여기 쌓입니다.':'다른 단어로 찾아보거나 위 분류를 눌러보세요.'}</div>`;
+  }else{
+    html+=listHTML(items);
+  }
+  return html;
+}
+
+function viewScenes(){
+  let html=`<div class="note"><b>순서대로 따라가면 끝납니다</b>상황을 열고 위에서부터 하나씩 보여주세요. 문장을 누르면 화면 가득 커집니다.</div>`;
+  SCENES.forEach((s,i)=>{
+    const ids=JSON.stringify(s.ids).replace(/"/g,'&quot;');
+    html+=`<details class="scene"${i===0?' open':''}>
+      <summary><span class="em">${s.icon}</span>${esc(s.title)}<span class="cnt">${s.ids.length}단계</span></summary>
+      <div class="steps">${s.ids.map((id,j)=>{const p=byId[id];if(!p)return '';
+        return `<button class="step" onclick='openPhrase("${id}",${ids})'>
+          <span class="n">${j+1}</span>
+          <span><span class="local loc">${esc(p.local)}</span><span class="kr" style="display:block">${esc(p.kr)}</span></span>
+        </button>`}).join('')}</div>
+    </details>`;
+  });
+  return html;
+}
+
+function viewShow(){
+  let html=`<div class="note"><b>말이 안 통할 때 제일 빠른 방법</b>숫자·주소·이름은 적어서 보여주고, 되묻는 말은 아래 버튼을 눌러달라고 하세요.</div>`;
+  html+=head('적어서 보여주기');
+  html+=`<textarea class="big-input loc" id="pen" placeholder="여기에 적으면 화면 가득 보여줍니다"></textarea>
+  <div class="pad">${['1','2','3','4','5','6','7','8','9',':','0','←'].map(k=>`<button onclick="pad('${k}')">${k}</button>`).join('')}</div>
+  <button class="wide" onclick="showPen()">화면 가득 보여주기</button>`;
+  html+=head('상대가 눌러서 답하기');
+  CHOICES.forEach((c,i)=>{
+    html+=`<div class="q">
+      <div class="qhead"><div class="ql loc">${esc(c.localQ)}</div><div class="qk">${esc(c.krQ)}</div></div>
+      <div class="opts">${c.answers.map((a,j)=>`<button class="loc" onclick="pick(${i},${j})">${esc(a.local)}</button>`).join('')}</div>
+      <div class="ans" id="a${i}"><b></b><span></span></div>
+    </div>`;
+  });
+  return html;
+}
+function pad(k){
+  const el=$('pen');if(!el)return;
+  el.value = k==='←' ? el.value.slice(0,-1) : el.value+k;
+}
+function showPen(){
+  const v=($('pen').value||'').trim();
+  if(!v)return;
+  openBoard(v,'적어서 보여주는 화면','',[], -1);
+}
+function pick(i,j){
+  const a=CHOICES[i].answers[j],el=$('a'+i);
+  el.querySelector('b').textContent=a.kr;
+  el.querySelector('span').textContent=a.local;
+  el.classList.add('on');
+}
+
+function viewFav(){
+  const items=PHRASES.filter(p=>favs.has(p.id));
+  if(!items.length)return `<div class="empty"><b>즐겨찾기가 비어 있어요</b>문장 오른쪽의 ☆를 누르면 여기에 모입니다.<br>출발 전에 자주 쓸 것만 골라두면 현장에서 훨씬 빨라요.</div>`;
+  let html=`<div class="note"><b>${items.length}개 저장됨</b>이 목록은 이 기기에 남아 있어서 비행기 모드에서도 열립니다.</div>`;
+  const cats=[...new Set(items.map(p=>p.cat))];
+  cats.forEach(c=>{html+=head(c)+listHTML(items.filter(p=>p.cat===c))});
+  return html;
+}
+
+function viewSos(){
+  let html=`<div class="note" style="border-left-color:#d92b2b"><b>누르면 화면 전체가 빨갛게 바뀝니다</b>말이 나오지 않는 상황에서 그대로 상대에게 보여주세요.</div>`;
+  html+=head('바로 보여줄 카드');
+  SOSCARD.forEach((c,i)=>{
+    html+=`<button class="sosbtn" onclick="openBoard(${attr(c.local)},${attr(c.kr)},'',[],-1,true)">
+      <span class="local loc">${esc(c.local)}</span><span class="kr">${esc(c.kr)}</span></button>`;
+  });
+  html+=head('전화 걸기');
+  html+=`<div class="sos-grid">${SOSNUM.map(n=>`<a class="tel" href="tel:${n.num.replace(/[^0-9+]/g,'')}">
+    <div class="num">${esc(n.num)}</div><div class="lb">${esc(n.label)}</div><div class="ds">${esc(n.desc)}</div></a>`).join('')}</div>`;
+  return html;
+}
+
+const TABS=[
+  ['phrases','💬','문장',viewPhrases],
+  ['scenes','🧭','상황',viewScenes],
+  ['show','📢','보여주기',viewShow],
+  ['favs','★','즐겨찾기',viewFav],
+  ['sos','🆘','긴급',viewSos],
+];
+
+function render(keepFocus){
+  const t=TABS.find(x=>x[0]===tab);
+  $('main').innerHTML=t[3]();
+  $('nav').innerHTML=TABS.map(x=>`<button aria-selected="${x[0]===tab}" onclick="setTab('${x[0]}')"><span class="ic">${x[1]}</span>${x[2]}</button>`).join('');
+  if(keepFocus&&$('q')){const el=$('q');el.focus();el.setSelectionRange(el.value.length,el.value.length)}
+  const ch=$('chips');
+  if(ch){const on=ch.querySelector('[aria-pressed="true"]');if(on&&!keepFocus&&on.scrollIntoView)on.scrollIntoView({block:'nearest',inline:'center'})}
+}
+function setTab(t){tab=t;query='';try{scrollTo(0,0)}catch(e){}render()}
+
+matchMedia('(prefers-color-scheme:dark)').addEventListener?.('change',()=>{if(cfg.theme==='auto')applyCfg()});
+applyCfg();render();
+</script></body></html>
