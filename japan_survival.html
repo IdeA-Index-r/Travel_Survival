@@ -371,11 +371,12 @@ function viewScenes(){
 }
 
 function viewShow(){
-  let html=`<div class="note"><b>말이 안 통할 때 제일 빠른 방법</b>숫자·주소·이름은 적어서 보여주고, 되묻는 말은 아래 버튼을 눌러달라고 하세요.</div>`;
-  html+=head('적어서 보여주기');
-  html+=`<textarea class="big-input loc" id="pen" placeholder="여기에 적으면 화면 가득 보여줍니다"></textarea>
-  <div class="pad">${['1','2','3','4','5','6','7','8','9',':','0','←'].map(k=>`<button onclick="pad('${k}')">${k}</button>`).join('')}</div>
-  <button class="wide" onclick="showPen()">화면 가득 보여주기</button>`;
+  let html=`<div class="note"><b>입력한 내용을 그대로 크게 보여줍니다</b>주소·호텔명·사람 이름·예약번호·문장·현지어·숫자 등 무엇이든 적을 수 있어요.</div>`;
+  html+=head('직접 입력해서 보여주기');
+  html+=`<textarea class="big-input" id="pen" inputmode="text" autocomplete="off" autocapitalize="none" placeholder="예: Hilton Tokyo / 18:30 / 王府井大街 / 예약번호 A1234"></textarea>
+  <div class="pad">${['1','2','3','4','5','6','7','8','9',':','0','←'].map(k=>`<button type="button" onclick="pad('${k}')">${k}</button>`).join('')}</div>
+  <div class="note" style="margin-top:8px"><b>숫자 패드는 선택 사항</b>위 입력칸에는 휴대폰 키보드로 일반 글자도 자유롭게 입력할 수 있습니다.</div>
+  <button type="button" class="wide" onclick="showPen(event)">입력한 내용 크게 보여주기</button>`;
   html+=head('상대가 눌러서 답하기');
   CHOICES.forEach((c,i)=>{
     html+=`<div class="q">
@@ -390,10 +391,26 @@ function pad(k){
   const el=$('pen');if(!el)return;
   el.value = k==='←' ? el.value.slice(0,-1) : el.value+k;
 }
-function showPen(){
-  const v=($('pen').value||'').trim();
-  if(!v)return;
-  openBoard(v,'적어서 보여주는 화면','',[], -1);
+function showPen(e){
+  if(e)e.preventDefault();
+  const el=$('pen');
+  if(!el)return;
+  const v=(el.value||'').trim();
+  if(!v){
+    el.focus();
+    return;
+  }
+  try{el.blur()}catch(_){}
+  BST={local:v,kr:'',rom:'',list:[],i:-1,replies:[]};
+  $('bLocal').textContent=v;
+  $('bKr').textContent='';
+  $('bRom').textContent='';
+  $('bReply').classList.remove('on');
+  $('bRep').innerHTML='';
+  $('bRep').style.display='none';
+  $('board').classList.remove('sos');
+  $('board').classList.add('on');
+  document.body.style.overflow='hidden';
 }
 function pick(i,j){
   const a=CHOICES[i].answers[j],el=$('a'+i);
