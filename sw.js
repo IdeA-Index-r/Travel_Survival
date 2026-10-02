@@ -1,4 +1,4 @@
-const CACHE_NAME = 'travel-survival-v2-20261002';
+const CACHE_NAME = 'travel-survival-v2-20261002-final';
 const APP_SHELL = [
   './',
   './index.html',
