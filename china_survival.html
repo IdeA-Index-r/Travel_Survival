@@ -337,7 +337,7 @@ function openBoard(local,kr,rom,list,i,isSos,replies){
   $('bRom').textContent=(cfg.rom&&rom)?rom:'';
   $('bReply').classList.remove('on');
   $('board').classList.toggle('sos',!!isSos);
-  $('bRep').innerHTML=BST.replies.map((r,j)=>`<button onclick="reply(${j})">${esc(r.local)}</button>`).join('');
+  $('bRep').innerHTML=BST.replies.map((r,j)=>`<button class="loc" lang="zh-CN" onclick="reply(${j})">${esc(r.local)}</button>`).join('');
   $('bRep').style.display=BST.replies.length?'grid':'none';
   lastFocus=document.activeElement;
   $('board').classList.add('on');
@@ -513,8 +513,10 @@ function showPen(e){
   $('bRep').innerHTML='';
   $('bRep').style.display='none';
   $('board').classList.remove('sos');
+  lastFocus=document.activeElement;
   $('board').classList.add('on');
   document.body.style.overflow='hidden';
+  requestAnimationFrame(()=>{const b=$('board').querySelector('.bt button');if(b)b.focus()});
 }
 function openChoiceBoard(i){
   const q=CHOICES[i];
