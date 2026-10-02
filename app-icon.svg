@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Travel Survival">
+  <rect width="512" height="512" rx="96" fill="#101720"/>
+  <rect x="82" y="92" width="38" height="328" rx="19" fill="#ffc400"/>
+  <path d="M176 152h236v72H176zm0 136h236v72H176z" fill="#ffffff"/>
+  <circle cx="382" cy="188" r="16" fill="#14396d"/>
+  <circle cx="382" cy="324" r="16" fill="#0b5563"/>
+</svg>
