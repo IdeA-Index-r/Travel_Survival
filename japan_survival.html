@@ -380,8 +380,14 @@ function viewShow(){
   html+=head('상대가 눌러서 답하기');
   CHOICES.forEach((c,i)=>{
     html+=`<div class="q">
-      <div class="qhead"><div class="ql loc">${esc(c.localQ)}</div><div class="qk">${esc(c.krQ)}</div></div>
-      <div class="opts">${c.answers.map((a,j)=>`<button class="loc" onclick="pick(${i},${j})">${esc(a.local)}</button>`).join('')}</div>
+      <div class="qhead">
+        <button type="button" class="qshow" onclick="openChoiceBoard(${i})">
+          <div class="ql loc">${esc(c.localQ)}</div>
+          <div class="qk">${esc(c.krQ)}</div>
+          <span class="qhint">↗ 질문 크게 보여주기</span>
+        </button>
+      </div>
+      <div class="opts">${c.answers.map((a,j)=>`<button type="button" class="loc" onclick="pick(${i},${j})">${esc(a.local)}</button>`).join('')}</div>
       <div class="ans" id="a${i}"><b></b><span></span></div>
     </div>`;
   });
@@ -411,6 +417,11 @@ function showPen(e){
   $('board').classList.remove('sos');
   $('board').classList.add('on');
   document.body.style.overflow='hidden';
+}
+function openChoiceBoard(i){
+  const q=CHOICES[i];
+  if(!q)return;
+  openBoard(q.localQ,q.krQ,'',[],-1,false,q.answers);
 }
 function pick(i,j){
   const a=CHOICES[i].answers[j],el=$('a'+i);
