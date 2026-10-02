@@ -6,7 +6,7 @@
 
 ## 바로 사용하기
 
-- GitHub Pages: https://aicreationeditor-source.github.io/Travel_Survival/
+- GitHub Pages: https://idea-index-r.github.io/Travel_Survival/
 - 일본 여행 카드: `japan_survival.html`
 - 중국 여행 카드: `china_survival.html`
 
