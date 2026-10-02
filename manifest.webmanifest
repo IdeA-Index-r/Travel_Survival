@@ -1,0 +1,19 @@
+{
+  "name": "Travel Survival",
+  "short_name": "Travel Survival",
+  "description": "말이 안 통할 때 꺼내서 보여주는 오프라인 여행 의사소통 카드",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#e8eaee",
+  "theme_color": "#101720",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "./app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
