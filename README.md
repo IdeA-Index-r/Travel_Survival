@@ -7,13 +7,16 @@
 
 > 번역기를 건네는 대신, 작은 키오스크를 건넵니다.
 
-현재 **일본어 ↔ 한국어**, **중국어(간체) ↔ 한국어** 버전을 제공합니다.
+현재 **일본·중국·미국·싱가포르·호주** 버전을 제공합니다. 미국·싱가포르·호주는 영어 ↔ 한국어 카드이며 각 89개 문장, 8가지 상황을 포함합니다. 국가별 교통·결제 질문과 긴급전화는 별도로 구성했습니다.
 
 ## 바로 사용하기
 
 - GitHub Pages: https://idea-index-r.github.io/Travel_Survival/
 - 일본 여행 카드: `japan_survival.html`
 - 중국 여행 카드: `china_survival.html`
+- 미국 여행 카드: `usa_survival.html`
+- 싱가포르 여행 카드: `singapore_survival.html`
+- 호주 여행 카드: `australia_survival.html`
 
 ## 핵심 컨셉
 
@@ -58,7 +61,7 @@ Travel Survival의 모티브는 **키오스크**입니다.
 
 ## 오프라인 사용
 
-이 프로젝트는 PWA 방식의 오프라인 사용을 지원합니다. 처음 인터넷에 연결된 상태에서 페이지를 열면 서비스 워커가 메인 화면, 일본·중국 카드, 웹앱 매니페스트와 아이콘을 기기에 캐시합니다.
+이 프로젝트는 PWA 방식의 오프라인 사용을 지원합니다. 처음 인터넷에 연결된 상태에서 페이지를 열면 서비스 워커가 메인 화면, 5개 국가 카드, 웹앱 매니페스트와 아이콘을 기기에 캐시합니다.
 
 화면에 **“✓ 오프라인 사용 준비 완료”**가 표시된 뒤에는 네트워크 연결이 없어도 주요 화면과 문장을 다시 열 수 있습니다.
 
@@ -77,6 +80,16 @@ Travel Survival의 모티브는 **키오스크**입니다.
 - 브라우저 확대 제한 제거
 - 음성 테스트와 재생 오류 안내
 - 긴급 연락처 검수 시점 표시
+
+## 추가 국가 안내
+
+영어권 카드의 발음 표기는 별도로 제공하지 않으며, 읽어주기는 각 국가의 영어 음성 설정을 사용합니다. 즐겨찾기·최근 사용·설정은 나라별로 분리됩니다. 입국·교통·결제 문장은 규정을 단정하는 대신 현장에서 확인하는 질문으로 구성했습니다.
+
+긴급전화 공식 근거 (2026-10-03 확인):
+
+- 미국 911: https://www.usa.gov/crimes-against-children
+- 싱가포르 경찰 999 / 소방·구급 995: https://www.gov.sg/contact-us/
+- 호주 000: https://www.triplezero.gov.au/
 
 ## 개인정보 및 이용 안내
 
@@ -99,6 +112,9 @@ Travel_Survival/
 ├─ index.html
 ├─ japan_survival.html
 ├─ china_survival.html
+├─ usa_survival.html
+├─ singapore_survival.html
+├─ australia_survival.html
 ├─ manifest.webmanifest
 ├─ sw.js
 ├─ app-icon.svg
@@ -124,3 +140,4 @@ Travel_Survival/
 ---
 
 **Travel Survival — 주머니 속 여행 키오스크.**
+

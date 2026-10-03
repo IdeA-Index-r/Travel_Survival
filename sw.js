@@ -1,9 +1,12 @@
-const CACHE_NAME = 'travel-survival-v3-20261003-ui';
+const CACHE_NAME = 'travel-survival-v4-20261003-countries';
 const APP_SHELL = [
   './',
   './index.html',
   './japan_survival.html',
   './china_survival.html',
+  './usa_survival.html',
+  './singapore_survival.html',
+  './australia_survival.html',
   './manifest.webmanifest',
   './app-icon.svg'
 ];
@@ -44,3 +47,4 @@ self.addEventListener('fetch', event => {
     })
   );
 });
+

@@ -1,0 +1,659 @@
+<!doctype html><html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#a55322">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./app-icon.svg" type="image/svg+xml">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Travel Survival">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>호주 여행 생존 앱</title>
+<style>
+:root{
+  --accent:#a55322; --accent-deep:#a55322; --signal:#ffc400;
+  --bg:#e8eaee; --panel:#fff; --ink:#101720; --sub:#5b6572; --line:#d3d8df;
+  --chipbg:#fff; --fs:1;
+}
+html[data-theme="dark"]{
+  --bg:#0c1016; --panel:#161d26; --ink:#eef2f7; --sub:#93a0af; --line:#27313d; --chipbg:#161d26;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Pretendard Variable",Pretendard,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  font-size:calc(16px * var(--fs));
+  -webkit-text-size-adjust:100%;
+  padding-bottom:calc(78px + env(safe-area-inset-bottom));
+}
+.loc{font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Microsoft YaHei","PingFang SC","Noto Sans JP","Noto Sans SC",-apple-system,sans-serif}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+
+/* ── header: 표지판 상단 띠 */
+header{position:sticky;top:0;z-index:30;background:var(--accent);color:#fff;padding:env(safe-area-inset-top) 0 0}
+.hrow{display:flex;align-items:center;gap:10px;padding:12px 16px 12px;max-width:820px;margin:0 auto}
+.hmark{width:6px;height:30px;background:var(--signal);flex:none}
+.htitle{font-size:1.06rem;font-weight:800;letter-spacing:-.02em;line-height:1.2;flex:1;min-width:0}
+.htitle small{display:block;font-size:.68rem;font-weight:500;opacity:.78;margin-top:2px;letter-spacing:0}
+.hbtn{width:42px;height:42px;border-radius:3px;background:rgba(255,255,255,.14);color:#fff;font-size:1.15rem;display:grid;place-items:center;flex:none;text-decoration:none}
+.hbtn:active{background:rgba(255,255,255,.3)}
+
+.wrap{max-width:820px;margin:0 auto;padding:0 14px}
+
+/* ── search + chips */
+.searchbar{position:sticky;top:calc(58px + env(safe-area-inset-top));z-index:20;background:var(--bg);padding:12px 0 6px}
+.searchbar input{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:14px 14px;outline:none}
+.searchbar input:focus{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.chips::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;border:1px solid var(--line);background:var(--chipbg);color:var(--sub);padding:9px 13px;border-radius:2px;font-size:.85rem;font-weight:600}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* ── phrase card: 좌측 방향바 = 표지판 */
+.list{display:grid;gap:8px;padding-bottom:20px}
+.pc{display:grid;grid-template-columns:5px 1fr auto;background:var(--panel);border:1px solid var(--line);border-radius:3px;overflow:hidden;align-items:stretch}
+.pc>.bar{background:var(--accent)}
+.pc.fav>.bar{background:var(--signal)}
+.pc>.body{padding:13px 4px 13px 13px;text-align:left;min-width:0}
+.pc .kr{display:block;font-size:.83rem;font-weight:600;color:var(--sub);line-height:1.4}
+.pc .local{display:block;font-size:1.19rem;font-weight:700;line-height:1.42;margin-top:5px;letter-spacing:-.01em;word-break:break-word}
+.pc .rom{display:block;font-size:.75rem;color:var(--sub);margin-top:5px;line-height:1.4}
+.side{display:flex;flex-direction:column;justify-content:center;gap:2px;padding:6px 8px}
+.side button{width:44px;height:40px;border-radius:3px;font-size:1.05rem;display:grid;place-items:center;color:var(--sub)}
+.side button:active{background:var(--bg)}
+.side .on{color:var(--signal)}
+html[data-theme="dark"] .side .on{color:var(--signal)}
+
+.empty{text-align:center;color:var(--sub);padding:56px 20px;line-height:1.6;font-size:.9rem}
+.empty b{display:block;color:var(--ink);font-size:1rem;margin-bottom:6px}
+
+/* ── section heads */
+.sect{margin:18px 0 9px;display:flex;align-items:center;gap:9px}
+.sect i{width:5px;height:17px;background:var(--accent);font-style:normal;flex:none}
+.sect h2{margin:0;font-size:.92rem;font-weight:800;letter-spacing:-.01em}
+.note{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--signal);border-radius:3px;padding:12px 13px;font-size:.83rem;color:var(--sub);line-height:1.6;margin:12px 0}
+.note b{color:var(--ink);display:block;margin-bottom:3px;font-size:.88rem}
+
+/* ── scene */
+.scene{background:var(--panel);border:1px solid var(--line);border-radius:3px;margin-bottom:8px;overflow:hidden}
+.scene>summary{list-style:none;padding:15px 14px;display:flex;align-items:center;gap:11px;font-weight:700;font-size:.98rem;cursor:pointer}
+.scene>summary::-webkit-details-marker{display:none}
+.scene>summary .em{font-size:1.25rem}
+.scene>summary .cnt{margin-left:auto;font-size:.75rem;color:var(--sub);font-weight:600}
+.scene[open]>summary{background:var(--accent);color:#fff}
+.scene[open]>summary .cnt{color:rgba(255,255,255,.8)}
+.scene .steps{padding:8px;display:grid;gap:8px}
+.step{display:grid;grid-template-columns:26px 1fr;gap:9px;align-items:start;text-align:left;width:100%;padding:9px 6px;border-radius:3px}
+.step:active{background:var(--bg)}
+.step .n{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:.75rem;font-weight:800;display:grid;place-items:center;margin-top:2px}
+.step .local{font-size:1.02rem;font-weight:700;line-height:1.4}
+.step .kr{font-size:.76rem;color:var(--sub);margin-top:3px}
+
+/* ── show tab */
+.big-input{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:15px;font-size:1.15rem;font-weight:700;outline:none;resize:none;min-height:72px}
+.big-input:focus{border-color:var(--accent)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}
+.pad button{background:var(--panel);border:1px solid var(--line);border-radius:3px;height:54px;font-size:1.2rem;font-weight:700}
+.pad button:active{background:var(--accent);color:#fff}
+.wide{width:100%;background:var(--accent);color:#fff;border-radius:3px;padding:16px;font-weight:800;font-size:1rem;margin-top:9px}
+.wide:active{background:var(--accent-deep)}
+.wide.ghost{background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+
+.q{background:var(--panel);border:1px solid var(--line);border-radius:3px;margin-bottom:9px;overflow:hidden}
+.q .qhead{background:var(--accent-deep);color:#fff;padding:14px}
+.q .ql{font-size:1.24rem;font-weight:800;line-height:1.35}
+.q .qk{font-size:.76rem;opacity:.8;margin-top:4px}
+.q .opts{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:9px}
+.q .opts button{background:var(--bg);border:1px solid var(--line);border-radius:3px;min-height:58px;padding:10px 8px;font-size:1.05rem;font-weight:700;line-height:1.3}
+.q .opts button:active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.q .ans{display:none;padding:14px;border-top:2px solid var(--signal);background:var(--bg)}
+.q .ans.on{display:block}
+.q .ans b{display:block;font-size:1.5rem;font-weight:800}
+.q .ans span{font-size:.8rem;color:var(--sub)}
+
+/* ── SOS */
+.sos-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tel{display:block;text-decoration:none;color:inherit;background:var(--panel);border:1px solid var(--line);border-left:5px solid #d92b2b;border-radius:3px;padding:14px}
+.tel .num{font-size:1.5rem;font-weight:800;letter-spacing:-.02em}
+.tel .lb{font-size:.83rem;font-weight:700;margin-top:2px}
+.tel .ds{font-size:.72rem;color:var(--sub);margin-top:3px}
+.sosbtn{width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);border-left:5px solid #d92b2b;border-radius:3px;padding:14px;margin-bottom:8px}
+.sosbtn .local{display:block;white-space:pre-wrap;font-size:1.1rem;font-weight:800;line-height:1.4}
+.sosbtn .kr{display:block;font-size:.78rem;color:var(--sub);margin-top:4px}
+
+/* ── nav */
+nav{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--panel);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.navin{max-width:820px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+.navin button{padding:9px 2px 10px;font-size:.66rem;font-weight:700;color:var(--sub);display:grid;gap:3px;justify-items:center;border-top:3px solid transparent;margin-top:-1px}
+.navin button .ic{font-size:1.12rem;line-height:1}
+.navin button[aria-selected="true"]{color:var(--accent);border-top-color:var(--accent)}
+html[data-theme="dark"] .navin button[aria-selected="true"]{color:var(--signal);border-top-color:var(--signal)}
+
+/* ── signboard (풀스크린) */
+#board{position:fixed;inset:0;z-index:100;background:var(--accent);color:#fff;display:none;flex-direction:column}
+#board.on{display:flex}
+#board.sos{background:#b81f1f}
+#board .bt{display:flex;align-items:center;padding:calc(10px + env(safe-area-inset-top)) 12px 8px;gap:6px}
+#board .bt button{width:46px;height:46px;border-radius:3px;background:rgba(255,255,255,.16);color:#fff;font-size:1.1rem;display:grid;place-items:center}
+#board .bt .sp{flex:1}
+#board .mid{flex:1;display:flex;flex-direction:column;justify-content:center;padding:8px 22px;text-align:center;overflow:auto}
+#bLocal{font-size:clamp(30px,8.4vw,74px);font-weight:800;line-height:1.28;letter-spacing:-.02em;word-break:break-word}
+#bKr{font-size:clamp(13px,3.4vw,19px);opacity:.82;margin-top:20px;line-height:1.5}
+#bRom{font-size:clamp(11px,3vw,15px);opacity:.6;margin-top:8px}
+#board .rep{padding:10px 12px calc(14px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1fr;gap:7px}
+#board .rep button{background:#fff;color:#111;border-radius:3px;min-height:60px;font-size:1.05rem;font-weight:800;padding:8px}
+#board .rep button:active{background:var(--signal)}
+#bReply{display:none;background:#fff;color:#111;border-radius:3px;padding:16px;margin:0 12px 10px;text-align:center}
+#bReply.on{display:block}
+#bReply b{display:block;font-size:1.7rem;font-weight:800;line-height:1.25}
+#bReply span{font-size:.8rem;color:#666;display:block;margin-top:5px}
+
+/* ── settings sheet */
+#sheet{position:fixed;inset:0;z-index:110;background:rgba(0,0,0,.45);display:none;align-items:flex-end}
+#sheet.on{display:flex}
+.sheetin{background:var(--panel);width:100%;max-width:820px;margin:0 auto;border-radius:12px 12px 0 0;padding:18px 16px calc(20px + env(safe-area-inset-bottom));max-height:82vh;overflow:auto}
+.srow{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.srow:last-of-type{border-bottom:0}
+.srow .lbl{flex:1;font-size:.9rem;font-weight:700}
+.srow .lbl small{display:block;font-weight:500;color:var(--sub);font-size:.73rem;margin-top:2px}
+.seg{display:flex;border:1px solid var(--line);border-radius:3px;overflow:hidden;flex:none}
+.seg button{padding:9px 11px;font-size:.78rem;font-weight:700;color:var(--sub);min-width:46px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+
+
+/* ── v2 quick access + status */ 
+.offline-status{font-size:.68rem;font-weight:600;opacity:.9}
+.quick-block{margin:10px 0 14px}
+.quick-title{font-size:.76rem;font-weight:800;color:var(--sub);margin:0 0 7px}
+.quick-recent{display:grid;grid-template-columns:1fr;gap:6px}
+.quick-recent button{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:10px 12px;text-align:left}
+.quick-recent .local{display:block;font-size:.95rem;font-weight:750;line-height:1.35}
+.quick-recent .kr{display:block;font-size:.72rem;color:var(--sub);margin-top:2px}
+.scene-shortcuts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.scene-shortcuts button{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:10px 5px;font-size:.74rem;font-weight:750;line-height:1.25}
+.scene-shortcuts button span{display:block;font-size:1.15rem;margin-bottom:3px}
+.q .opts .optlocal{display:block;font-weight:800}
+.q .opts .optkr{display:block;font-size:.7rem;font-weight:600;color:var(--sub);margin-top:4px}
+.q .opts button:active .optkr{color:rgba(255,255,255,.82)}
+.verified{font-size:.72rem;color:var(--sub);margin:-2px 0 9px;padding-left:2px}
+.voice-test{border:1px solid var(--line);background:var(--panel);border-radius:3px;padding:9px 11px;font-size:.78rem;font-weight:800;white-space:nowrap}
+#toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:130;max-width:min(92vw,560px);background:var(--ink);color:var(--bg);padding:10px 13px;border-radius:3px;font-size:.78rem;font-weight:700;display:none;box-shadow:0 6px 24px rgba(0,0,0,.22)}
+#toast.on{display:block}
+
+/* ── v3 UI */
+.sb-row{position:relative}
+.searchbar input{padding-right:48px}
+.qclear{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:42px;height:42px;border-radius:3px;color:var(--sub);font-size:1rem;display:grid;place-items:center}
+.qclear[hidden]{display:none}
+.rcount{font-size:.74rem;font-weight:700;color:var(--sub);margin:0 0 8px}
+.pc>.body:active,.quick-recent button:active,.scene-shortcuts button:active,.sosbtn:active{background:var(--bg)}
+#board .bt button[hidden]{display:none}
+#board .bt .pos{font-size:.82rem;font-weight:800;opacity:.8;min-width:48px;text-align:center;font-variant-numeric:tabular-nums}
+#board .rep-hint{text-align:center;font-size:1rem;font-weight:800;padding:4px 12px 0;opacity:.95}
+#board .rep-hint[hidden]{display:none}
+#board .rep button[aria-pressed="true"]{background:var(--signal);color:#111;box-shadow:inset 0 0 0 3px #111}
+#bReply .cap{display:block;font-size:.72rem;font-weight:800;color:#666;margin:0 0 4px;letter-spacing:.02em}
+.inline-in{display:flex;gap:7px}
+.inline-in input{flex:1;min-width:0;border:2px solid var(--accent);border-radius:3px;padding:13px;font-size:1.1rem;font-weight:700;background:var(--panel);outline:none}
+.inline-in button{flex:none;background:var(--accent);color:#fff;border-radius:3px;padding:0 18px;font-weight:800}
+#bInput{display:none;margin:0 12px 10px}
+#bInput.on{display:block}
+#bInput .inline-in input{background:#fff;color:#111;border-color:#fff}
+#bInput .inline-in button{background:var(--signal);color:#111}
+.q .inbox{display:none;padding:0 9px 9px}
+.q .inbox.on{display:block}
+.q .opts button[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.q .opts button[aria-pressed="true"] .optkr{color:rgba(255,255,255,.82)}
+.padwrap{margin-top:9px}
+.padwrap>summary{list-style:none;cursor:pointer;font-size:.8rem;font-weight:700;color:var(--sub);padding:6px 2px}
+.padwrap>summary::-webkit-details-marker{display:none}
+.padwrap>summary::before{content:'＋ '}
+.padwrap[open]>summary::before{content:'－ '}
+.padwrap .pad{margin-top:4px}
+.padwrap .pad button{height:48px}
+
+@media(min-width:640px){
+  .list{grid-template-columns:1fr 1fr}
+  .q .opts{grid-template-columns:repeat(3,1fr)}
+  #board .rep{grid-template-columns:repeat(4,1fr)}
+}
+@media(prefers-reduced-motion:no-preference){
+  .pc,.scene>summary{transition:background .12s}
+}
+:focus-visible{outline:3px solid var(--signal);outline-offset:2px}
+</style></head><body>
+
+<header>
+  <div class="hrow">
+    <a class="hbtn" href="./" aria-label="국가 선택으로 돌아가기">‹</a>
+    <span class="hmark"></span>
+    <div class="htitle">호주 여행 생존 앱<small id="offlineStatus" class="offline-status">오프라인 준비 중…</small></div>
+    <button class="hbtn" onclick="openSheet()" aria-label="설정">⚙</button>
+  </div>
+</header>
+
+<main class="wrap" id="main"></main>
+
+<nav><div class="navin" id="nav"></div></nav>
+
+<div id="board" role="dialog" aria-modal="true" aria-label="현지인에게 보여주는 전체 화면" tabindex="-1" onclick="if(event.target.id==='board')closeBoard()">
+  <div class="bt">
+    <button onclick="closeBoard()" aria-label="닫기">✕</button>
+    <span class="sp"></span>
+    <button id="bPrev" onclick="boardStep(-1)" aria-label="이전 문장">‹</button>
+    <span id="bPos" class="pos" aria-live="polite"></span>
+    <button id="bNext" onclick="boardStep(1)" aria-label="다음 문장">›</button>
+    <button onclick="speak(BST.local)" aria-label="읽어주기">🔊</button>
+  </div>
+  <div class="mid">
+    <div id="bLocal" class="loc" lang="en"></div>
+    <div id="bKr"></div>
+    <div id="bRom"></div>
+  </div>
+  <div id="bReply" role="status" aria-live="polite"><span class="cap">상대방의 답</span><b></b><span class="sub"></span></div>
+  <div id="bInput"></div>
+  <div id="bHint" class="rep-hint loc" lang="en" hidden>Please tap an answer below.</div>
+  <div class="rep" id="bRep"></div>
+</div>
+
+<div id="sheet" role="dialog" aria-modal="true" aria-label="설정" tabindex="-1" onclick="if(event.target.id==='sheet')closeSheet()">
+  <div class="sheetin">
+    <div class="srow"><div class="lbl">화면<small>어두운 곳에서는 다크가 눈이 편해요</small></div>
+      <div class="seg" id="segTheme"></div></div>
+    <div class="srow"><div class="lbl">글자 크기<small>장갑 끼고도 읽히게</small></div>
+      <div class="seg" id="segSize"></div></div>
+    <div class="srow"><div class="lbl">발음 표기<small>한글 발음 줄</small></div>
+      <div class="seg" id="segRom"></div></div>
+    <div class="srow"><div class="lbl">읽어주는 속도<small>상대가 알아듣기 좋은 속도</small></div>
+      <div class="seg" id="segRate"></div></div>
+    <div class="srow"><div class="lbl">음성 테스트<small>출국 전에 영어 음성이 재생되는지 확인해요</small></div>
+      <button type="button" class="voice-test" onclick="testSpeech()">🔊 테스트</button></div>
+    <div class="note" style="margin-top:14px">
+      <b>개인정보 안내</b>
+      이 앱은 이름·전화번호·숙소 주소 등 개인 식별 정보를 개발자 서버로 수집하거나 전송하도록 설계하지 않았습니다. 직접 입력한 내용도 앱에서 저장하지 않습니다.<br>
+      즐겨찾기·최근 사용·화면 설정만 이 기기의 브라우저에 저장됩니다. GitHub Pages 호스팅 과정에서 방문자의 IP 주소가 보안 목적으로 기록될 수 있습니다.
+    </div>
+    <div class="note" style="margin-top:10px">
+      <b>이용 안내</b>
+      이 도구는 여행 중 의사소통을 돕는 보조 수단입니다. 번역·연락처·제도 정보는 상황이나 시점에 따라 달라질 수 있으며, 의료·법률·안전·긴급 상황에서는 현지 공식 기관과 전문 인력의 안내를 우선하세요.
+    </div>
+    <button class="wide ghost" onclick="closeSheet()">닫기</button>
+  </div>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const PHRASES=[{"id": "hello", "cat": "기본", "kr": "안녕하세요. 영어를 조금만 할 수 있어요.", "local": "Hello. I only speak a little English.", "roman": ""}, {"id": "korean", "cat": "기본", "kr": "저는 한국에서 왔어요.", "local": "I am from South Korea.", "roman": ""}, {"id": "slow", "cat": "기본", "kr": "천천히 말씀해 주세요.", "local": "Please speak slowly.", "roman": ""}, {"id": "again", "cat": "기본", "kr": "다시 한 번 말씀해 주세요.", "local": "Could you say that again?", "roman": ""}, {"id": "point", "cat": "기본", "kr": "해당하는 답 버튼을 눌러 주세요.", "local": "Please tap the answer that applies.", "roman": ""}, {"id": "write", "cat": "기본", "kr": "여기에 답을 입력해 주세요.", "local": "Please type your answer here.", "roman": ""}, {"id": "thanks", "cat": "기본", "kr": "감사합니다.", "local": "Thank you.", "roman": ""}, {"id": "sorry", "cat": "기본", "kr": "죄송합니다.", "local": "I am sorry.", "roman": ""}, {"id": "understand", "cat": "기본", "kr": "잘 이해하지 못했어요.", "local": "I do not understand.", "roman": ""}, {"id": "translate", "cat": "기본", "kr": "번역 앱을 써도 될까요?", "local": "May I use a translation app?", "roman": ""}, {"id": "gate", "cat": "공항·입국", "kr": "탑승구가 어디예요?", "local": "Where is the boarding gate?", "roman": ""}, {"id": "counter", "cat": "공항·입국", "kr": "체크인 카운터가 어디예요?", "local": "Where is the check-in counter?", "roman": ""}, {"id": "baggage", "cat": "공항·입국", "kr": "수하물 찾는 곳이 어디예요?", "local": "Where is baggage claim?", "roman": ""}, {"id": "lostbag", "cat": "공항·입국", "kr": "제 수하물이 나오지 않았어요.", "local": "My baggage has not arrived.", "roman": ""}, {"id": "delay", "cat": "공항·입국", "kr": "제 항공편이 지연됐나요?", "local": "Is my flight delayed?", "roman": ""}, {"id": "transfer", "cat": "공항·입국", "kr": "환승은 어디로 가야 하나요?", "local": "Where do I go for my connecting flight?", "roman": ""}, {"id": "tourism", "cat": "공항·입국", "kr": "관광 목적으로 왔습니다.", "local": "I am here for tourism.", "roman": ""}, {"id": "stay", "cat": "공항·입국", "kr": "이 날짜까지 머물 예정입니다.", "local": "I plan to stay until this date.", "roman": ""}, {"id": "return", "cat": "공항·입국", "kr": "이것이 제 귀국 항공권입니다.", "local": "This is my return ticket.", "roman": ""}, {"id": "declare", "cat": "공항·입국", "kr": "이 물품을 신고해야 하나요?", "local": "Do I need to declare this item?", "roman": ""}, {"id": "checkin", "cat": "호텔", "kr": "체크인하고 싶어요.", "local": "I would like to check in.", "roman": ""}, {"id": "reserved", "cat": "호텔", "kr": "이것이 제 예약 확인서입니다.", "local": "This is my booking confirmation.", "roman": ""}, {"id": "luggage", "cat": "호텔", "kr": "짐을 맡길 수 있나요?", "local": "Can you store my luggage?", "roman": ""}, {"id": "wifi", "cat": "호텔", "kr": "와이파이 비밀번호를 알려 주세요.", "local": "What is the Wi-Fi password?", "roman": ""}, {"id": "breakfast", "cat": "호텔", "kr": "조식은 몇 시부터인가요?", "local": "What time does breakfast start?", "roman": ""}, {"id": "checkout", "cat": "호텔", "kr": "체크아웃은 몇 시인가요?", "local": "What time is check-out?", "roman": ""}, {"id": "key", "cat": "호텔", "kr": "객실 키가 작동하지 않아요.", "local": "My room key does not work.", "roman": ""}, {"id": "towel", "cat": "호텔", "kr": "수건을 더 받을 수 있나요?", "local": "Could I have extra towels?", "roman": ""}, {"id": "deposit", "cat": "호텔", "kr": "보증금은 언제 환불되나요?", "local": "When will the deposit be refunded?", "roman": ""}, {"id": "quiet", "cat": "호텔", "kr": "더 조용한 방으로 바꿀 수 있나요?", "local": "Could I move to a quieter room?", "roman": ""}, {"id": "station", "cat": "교통·택시", "kr": "가장 가까운 역이 어디예요?", "local": "Where is the nearest station?", "roman": ""}, {"id": "train", "cat": "교통·택시", "kr": "이 열차가 여기로 가나요?", "local": "Does this train go to this place?", "roman": ""}, {"id": "platform", "cat": "교통·택시", "kr": "어느 승강장에서 타나요?", "local": "Which platform should I use?", "roman": ""}, {"id": "ticket", "cat": "교통·택시", "kr": "표는 어디에서 사나요?", "local": "Where can I buy a ticket?", "roman": ""}, {"id": "last", "cat": "교통·택시", "kr": "막차는 몇 시인가요?", "local": "What time is the last train?", "roman": ""}, {"id": "bus", "cat": "교통·택시", "kr": "이 버스가 여기로 가나요?", "local": "Does this bus go to this place?", "roman": ""}, {"id": "address", "cat": "교통·택시", "kr": "여기 적힌 주소로 가 주세요.", "local": "Please take me to this address.", "roman": ""}, {"id": "fare", "cat": "교통·택시", "kr": "요금은 얼마인가요?", "local": "How much is the fare?", "roman": ""}, {"id": "taxicard", "cat": "교통·택시", "kr": "카드로 결제할 수 있나요?", "local": "Can I pay by card?", "roman": ""}, {"id": "stop", "cat": "교통·택시", "kr": "안전한 곳에 세워 주세요.", "local": "Please stop somewhere safe.", "roman": ""}, {"id": "pickup", "cat": "교통·택시", "kr": "차량 호출 앱의 승차 지점이 어디예요?", "local": "Where is the ride-hailing pickup point?", "roman": ""}, {"id": "table", "cat": "식당·카페", "kr": "한 명 자리 있나요?", "local": "Do you have a table for one?", "roman": ""}, {"id": "wait", "cat": "식당·카페", "kr": "얼마나 기다려야 하나요?", "local": "How long is the wait?", "roman": ""}, {"id": "menu", "cat": "식당·카페", "kr": "메뉴를 보여 주세요.", "local": "May I see the menu?", "roman": ""}, {"id": "order", "cat": "식당·카페", "kr": "이것을 주문하고 싶어요.", "local": "I would like to order this.", "roman": ""}, {"id": "nospicy", "cat": "식당·카페", "kr": "맵지 않게 해 주세요.", "local": "Please make it mild.", "roman": ""}, {"id": "water", "cat": "식당·카페", "kr": "물을 받을 수 있나요?", "local": "Could I have some water?", "roman": ""}, {"id": "takeaway", "cat": "식당·카페", "kr": "포장해 주세요.", "local": "To go, please.", "roman": ""}, {"id": "bill", "cat": "식당·카페", "kr": "계산서를 주세요.", "local": "Could I have the bill?", "roman": ""}, {"id": "split", "cat": "식당·카페", "kr": "각자 계산할 수 있나요?", "local": "Can we pay separately?", "roman": ""}, {"id": "nuts", "cat": "식당·카페", "kr": "견과류 알레르기가 있어요. 견과류가 들어 있나요?", "local": "I have a nut allergy. Does this contain nuts?", "roman": ""}, {"id": "seafood", "cat": "식당·카페", "kr": "해산물을 먹지 않아요. 해산물이 들어 있나요?", "local": "I do not eat seafood. Does this contain seafood?", "roman": ""}, {"id": "milk", "cat": "식당·카페", "kr": "우유 없이 만들어 주세요.", "local": "Please make it without milk.", "roman": ""}, {"id": "wrong", "cat": "식당·카페", "kr": "제가 주문한 음식과 달라요.", "local": "This is not what I ordered.", "roman": ""}, {"id": "price", "cat": "쇼핑·결제", "kr": "이것은 얼마인가요?", "local": "How much is this?", "roman": ""}, {"id": "size", "cat": "쇼핑·결제", "kr": "다른 사이즈가 있나요?", "local": "Do you have another size?", "roman": ""}, {"id": "try", "cat": "쇼핑·결제", "kr": "입어 봐도 될까요?", "local": "May I try this on?", "roman": ""}, {"id": "card", "cat": "쇼핑·결제", "kr": "신용카드를 받나요?", "local": "Do you accept credit cards?", "roman": ""}, {"id": "cash", "cat": "쇼핑·결제", "kr": "현금으로 결제할 수 있나요?", "local": "Can I pay in cash?", "roman": ""}, {"id": "receipt", "cat": "쇼핑·결제", "kr": "영수증을 주세요.", "local": "Could I have a receipt?", "roman": ""}, {"id": "refund", "cat": "쇼핑·결제", "kr": "환불받을 수 있나요?", "local": "Can I get a refund?", "roman": ""}, {"id": "total", "cat": "쇼핑·결제", "kr": "이것이 최종 결제 금액인가요?", "local": "Is this the final total?", "roman": ""}, {"id": "currency", "cat": "쇼핑·결제", "kr": "현지 통화로 결제해 주세요.", "local": "Please charge me in the local currency.", "roman": ""}, {"id": "toilet", "cat": "관광·생활", "kr": "화장실이 어디예요?", "local": "Where is the restroom?", "roman": ""}, {"id": "where", "cat": "관광·생활", "kr": "이 장소가 어디예요?", "local": "Where is this place?", "roman": ""}, {"id": "time", "cat": "관광·생활", "kr": "여기까지 얼마나 걸리나요?", "local": "How long does it take to get here?", "roman": ""}, {"id": "open", "cat": "관광·생활", "kr": "몇 시에 여나요?", "local": "What time do you open?", "roman": ""}, {"id": "close", "cat": "관광·생활", "kr": "몇 시에 닫나요?", "local": "What time do you close?", "roman": ""}, {"id": "photo", "cat": "관광·생활", "kr": "사진을 찍어도 되나요?", "local": "May I take photos here?", "roman": ""}, {"id": "picture", "cat": "관광·생활", "kr": "제 사진을 찍어 주실 수 있나요?", "local": "Could you take a photo of me?", "roman": ""}, {"id": "charge", "cat": "관광·생활", "kr": "휴대폰을 충전할 수 있나요?", "local": "Can I charge my phone here?", "roman": ""}, {"id": "accessible", "cat": "관광·생활", "kr": "휠체어로 이용할 수 있는 입구가 어디예요?", "local": "Where is the wheelchair-accessible entrance?", "roman": ""}, {"id": "help", "cat": "병원·긴급", "kr": "도와주세요. 응급 상황입니다.", "local": "Please help. This is an emergency.", "roman": ""}, {"id": "ambulance", "cat": "병원·긴급", "kr": "구급차를 불러 주세요.", "local": "Please call an ambulance.", "roman": ""}, {"id": "police", "cat": "병원·긴급", "kr": "경찰을 불러 주세요.", "local": "Please call the police.", "roman": ""}, {"id": "pain", "cat": "병원·긴급", "kr": "여기가 아파요.", "local": "I have pain here.", "roman": ""}, {"id": "breathe", "cat": "병원·긴급", "kr": "숨쉬기가 어려워요.", "local": "I am having difficulty breathing.", "roman": ""}, {"id": "allergy", "cat": "병원·긴급", "kr": "알레르기가 있어요.", "local": "I have an allergy.", "roman": ""}, {"id": "medicine", "cat": "병원·긴급", "kr": "제가 복용하는 약입니다.", "local": "This is the medication I take.", "roman": ""}, {"id": "hospital", "cat": "병원·긴급", "kr": "가장 가까운 병원이 어디예요?", "local": "Where is the nearest hospital?", "roman": ""}, {"id": "passport", "cat": "병원·긴급", "kr": "여권을 잃어버렸어요.", "local": "I have lost my passport.", "roman": ""}, {"id": "phone", "cat": "병원·긴급", "kr": "휴대폰을 잃어버렸어요.", "local": "I have lost my phone.", "roman": ""}, {"id": "embassy", "cat": "병원·긴급", "kr": "대한민국 대사관 또는 영사관에 연락해 주세요.", "local": "Please contact the South Korean embassy or consulate.", "roman": ""}, {"id": "unsafe", "cat": "병원·긴급", "kr": "이 사람이 저를 따라옵니다. 안전한 곳으로 도와주세요.", "local": "Someone is following me. Please help me get somewhere safe.", "roman": ""}, {"id": "no", "cat": "병원·긴급", "kr": "괜찮습니다. 필요 없어요.", "local": "No, thank you.", "roman": ""}, {"id": "leave", "cat": "병원·긴급", "kr": "그만해 주세요.", "local": "Please stop.", "roman": ""}, {"id": "tapoff", "cat": "교통·택시", "kr": "내릴 때도 카드를 찍어야 하나요?", "local": "Do I need to tap off when I get off?", "roman": ""}, {"id": "surcharge", "cat": "식당·결제", "kr": "오늘 추가 요금이 있나요?", "local": "Is there a surcharge today?", "roman": ""}, {"id": "swim", "cat": "관광·생활", "kr": "여기서 수영해도 안전한가요?", "local": "Is it safe to swim here?", "roman": ""}];
+const CHOICES=[{"localQ": "Which way?", "krQ": "어느 방향인가요?", "answers": [{"local": "Left", "kr": "왼쪽"}, {"local": "Right", "kr": "오른쪽"}, {"local": "Straight ahead", "kr": "직진"}, {"local": "Upstairs", "kr": "위층"}, {"local": "Downstairs", "kr": "아래층"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}]}, {"localQ": "What time?", "krQ": "몇 시인가요?", "answers": [{"local": "✍ Type an answer", "kr": "직접 입력", "input": true}]}, {"localQ": "How much?", "krQ": "얼마인가요?", "answers": [{"local": "Free", "kr": "무료"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}]}, {"localQ": "Which payment methods do you accept?", "krQ": "어떤 결제수단을 받나요?", "answers": [{"local": "Cash", "kr": "현금"}, {"local": "Card", "kr": "카드"}, {"local": "Cash only", "kr": "현금만"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}]}, {"localQ": "Where should I wait?", "krQ": "어디서 기다리면 되나요?", "answers": [{"local": "Here", "kr": "여기"}, {"local": "Entrance", "kr": "입구"}, {"local": "Lobby", "kr": "로비"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}]}, {"localQ": "How long is the wait?", "krQ": "얼마나 기다리나요?", "answers": [{"local": "5 minutes", "kr": "5분"}, {"local": "15 minutes", "kr": "15분"}, {"local": "30 minutes or more", "kr": "30분 이상"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}]}];
+const SCENES=[{"title": "공항 도착·입국", "icon": "✈️", "ids": ["tourism", "stay", "return", "baggage", "lostbag"]}, {"title": "호텔 체크인", "icon": "🏨", "ids": ["checkin", "reserved", "luggage", "wifi", "breakfast", "checkout"]}, {"title": "대중교통 타기", "icon": "🚉", "ids": ["station", "ticket", "train", "platform", "last"]}, {"title": "택시·차량 호출", "icon": "🚕", "ids": ["pickup", "address", "fare", "taxicard", "stop"]}, {"title": "식당에서 주문·계산", "icon": "🍽️", "ids": ["table", "wait", "menu", "order", "nospicy", "water", "bill"]}, {"title": "쇼핑·결제", "icon": "🛍️", "ids": ["price", "size", "try", "card", "total", "receipt"]}, {"title": "길 찾기·관광", "icon": "🧭", "ids": ["where", "time", "open", "photo", "picture", "thanks"]}, {"title": "아프거나 위험할 때", "icon": "🆘", "ids": ["help", "pain", "allergy", "medicine", "hospital", "embassy"]}];
+const SOSNUM=[{"label": "경찰·소방·구급", "num": "000", "desc": "호주 Triple Zero 긴급 신고"}];
+const SOSCARD=[{"kr": "도와주세요. 응급 상황입니다.", "local": "Please help. This is an emergency."}, {"kr": "구급차를 불러 주세요.", "local": "Please call an ambulance."}, {"kr": "경찰을 불러 주세요.", "local": "Please call the police."}, {"kr": "숨쉬기가 어려워요.", "local": "I am having difficulty breathing."}, {"kr": "대한민국 대사관 또는 영사관에 연락해 주세요.", "local": "Please contact the South Korean embassy or consulate."}, {"kr": "이 사람이 저를 따라옵니다. 안전한 곳으로 도와주세요.", "local": "Someone is following me. Please help me get somewhere safe."}];
+const LANG="en-AU", KEY="svaustralia1.";
+const REPLIES_BY_ID={"again": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "translate": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "gate": [{"local": "Left", "kr": "왼쪽"}, {"local": "Right", "kr": "오른쪽"}, {"local": "Straight ahead", "kr": "직진"}, {"local": "Upstairs", "kr": "위층"}, {"local": "Downstairs", "kr": "아래층"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "counter": [{"local": "Left", "kr": "왼쪽"}, {"local": "Right", "kr": "오른쪽"}, {"local": "Straight ahead", "kr": "직진"}, {"local": "Upstairs", "kr": "위층"}, {"local": "Downstairs", "kr": "아래층"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "baggage": [{"local": "Left", "kr": "왼쪽"}, {"local": "Right", "kr": "오른쪽"}, {"local": "Straight ahead", "kr": "직진"}, {"local": "Upstairs", "kr": "위층"}, {"local": "Downstairs", "kr": "아래층"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "delay": [{"local": "On time", "kr": "정상 운항"}, {"local": "Delayed", "kr": "지연"}, {"local": "Cancelled", "kr": "결항"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "transfer": [{"local": "Left", "kr": "왼쪽"}, {"local": "Right", "kr": "오른쪽"}, {"local": "Straight ahead", "kr": "직진"}, {"local": "Upstairs", "kr": "위층"}, {"local": "Downstairs", "kr": "아래층"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "declare": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "luggage": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "wifi": [{"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "breakfast": [{"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "checkout": [{"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "towel": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "deposit": [{"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "quiet": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "station": [{"local": "Left", "kr": "왼쪽"}, {"local": "Right", "kr": "오른쪽"}, {"local": "Straight ahead", "kr": "직진"}, {"local": "Upstairs", "kr": "위층"}, {"local": "Downstairs", "kr": "아래층"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "train": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "platform": [{"local": "Left", "kr": "왼쪽"}, {"local": "Right", "kr": "오른쪽"}, {"local": "Straight ahead", "kr": "직진"}, {"local": "Upstairs", "kr": "위층"}, {"local": "Downstairs", "kr": "아래층"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "ticket": [{"local": "Left", "kr": "왼쪽"}, {"local": "Right", "kr": "오른쪽"}, {"local": "Straight ahead", "kr": "직진"}, {"local": "Upstairs", "kr": "위층"}, {"local": "Downstairs", "kr": "아래층"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "last": [{"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "bus": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "fare": [{"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "taxicard": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "pickup": [{"local": "Left", "kr": "왼쪽"}, {"local": "Right", "kr": "오른쪽"}, {"local": "Straight ahead", "kr": "직진"}, {"local": "Upstairs", "kr": "위층"}, {"local": "Downstairs", "kr": "아래층"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "table": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "wait": [{"local": "5 minutes", "kr": "5분"}, {"local": "15 minutes", "kr": "15분"}, {"local": "30 minutes or more", "kr": "30분 이상"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "menu": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "water": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "bill": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "split": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "nuts": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "seafood": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "price": [{"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "size": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "try": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "card": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "cash": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "receipt": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "refund": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "total": [{"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "toilet": [{"local": "Left", "kr": "왼쪽"}, {"local": "Right", "kr": "오른쪽"}, {"local": "Straight ahead", "kr": "직진"}, {"local": "Upstairs", "kr": "위층"}, {"local": "Downstairs", "kr": "아래층"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "where": [{"local": "Left", "kr": "왼쪽"}, {"local": "Right", "kr": "오른쪽"}, {"local": "Straight ahead", "kr": "직진"}, {"local": "Upstairs", "kr": "위층"}, {"local": "Downstairs", "kr": "아래층"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "time": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "open": [{"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "close": [{"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "photo": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "picture": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "charge": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "accessible": [{"local": "Left", "kr": "왼쪽"}, {"local": "Right", "kr": "오른쪽"}, {"local": "Straight ahead", "kr": "직진"}, {"local": "Upstairs", "kr": "위층"}, {"local": "Downstairs", "kr": "아래층"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "help": [{"local": "I will call for help", "kr": "도움을 요청할게요"}, {"local": "Please wait here", "kr": "여기에서 기다려 주세요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "ambulance": [{"local": "I will call for help", "kr": "도움을 요청할게요"}, {"local": "Please wait here", "kr": "여기에서 기다려 주세요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "police": [{"local": "I will call for help", "kr": "도움을 요청할게요"}, {"local": "Please wait here", "kr": "여기에서 기다려 주세요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "hospital": [{"local": "Left", "kr": "왼쪽"}, {"local": "Right", "kr": "오른쪽"}, {"local": "Straight ahead", "kr": "직진"}, {"local": "Upstairs", "kr": "위층"}, {"local": "Downstairs", "kr": "아래층"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "unsafe": [{"local": "I will call for help", "kr": "도움을 요청할게요"}, {"local": "Please wait here", "kr": "여기에서 기다려 주세요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "tapoff": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "surcharge": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}], "swim": [{"local": "Yes", "kr": "네"}, {"local": "No", "kr": "아니요"}, {"local": "Let me check", "kr": "확인해볼게요"}, {"local": "✍ Type an answer", "kr": "직접 입력", "input": true}]};
+function contextualReplies(p){
+  return REPLIES_BY_ID[p.id]||[];
+}
+
+const $=id=>document.getElementById(id);
+const attr=s=>esc(JSON.stringify(String(s)));
+const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const byId=Object.fromEntries(PHRASES.map(p=>[p.id,p]));
+
+/* ── state */
+const store={
+  get(k,d){try{const v=localStorage.getItem(KEY+k);return v===null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(KEY+k,JSON.stringify(v))}catch(e){}}
+};
+let favs=new Set(store.get('favs',[]));
+let recent=store.get('recent',[]);
+let cfg=Object.assign({theme:'auto',size:'m',rom:true,rate:0.85},store.get('cfg',{}));
+let tab='phrases', cat='전체', query='', sceneOpen=0;
+let lastFocus=null, sheetLastFocus=null, toastTimer=null;
+
+/* ── settings */
+function applyCfg(){
+  const t=cfg.theme==='auto'?(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'):cfg.theme;
+  document.documentElement.dataset.theme=t;
+  document.documentElement.style.setProperty('--fs',{s:.92,m:1,l:1.14,xl:1.3}[cfg.size]||1);
+  store.set('cfg',cfg);
+}
+function seg(el,opts,cur,fn){
+  el.innerHTML=opts.map(o=>`<button aria-pressed="${o[0]===cur}" data-v="${o[0]}">${o[1]}</button>`).join('');
+  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{fn(b.dataset.v);buildSheet()});
+}
+function buildSheet(){
+  seg($('segTheme'),[['auto','자동'],['light','밝게'],['dark','어둡게']],cfg.theme,v=>{cfg.theme=v;applyCfg()});
+  seg($('segSize'),[['m','보통'],['l','크게'],['xl','아주 크게']],cfg.size,v=>{cfg.size=v;applyCfg()});
+  seg($('segRom'),[[true,'표시'],[false,'숨김']],cfg.rom,v=>{cfg.rom=(v==='true');applyCfg();render()});
+  seg($('segRate'),[[0.7,'느리게'],[0.85,'보통'],[1,'빠르게']],cfg.rate,v=>{cfg.rate=parseFloat(v);applyCfg()});
+}
+function openSheet(){
+  sheetLastFocus=document.activeElement;
+  buildSheet();
+  $('sheet').classList.add('on');
+  document.body.style.overflow='hidden';
+  requestAnimationFrame(()=>{const b=$('sheet').querySelector('button');if(b)b.focus()});
+}
+function closeSheet(){
+  $('sheet').classList.remove('on');
+  document.body.style.overflow='';
+  if(sheetLastFocus&&sheetLastFocus.focus)sheetLastFocus.focus();
+}
+
+/* ── speech */
+function notify(msg){
+  const el=$('toast');if(!el)return;
+  el.textContent=msg;el.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('on'),2800);
+}
+function speak(t,isTest=false){
+  if(!t)return;
+  if(!('speechSynthesis' in window)||typeof SpeechSynthesisUtterance==='undefined'){
+    notify('영어 음성 재생을 지원하지 않는 브라우저예요.');
+    return;
+  }
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(t);
+    u.lang=LANG;u.rate=cfg.rate;
+    u.onerror=()=>notify('영어 음성을 재생하지 못했어요. 기기 음성 설정을 확인해 주세요.');
+    if(isTest)u.onstart=()=>notify('영어 음성 테스트 재생 중');
+    speechSynthesis.speak(u);
+  }catch(e){
+    notify('영어 음성을 재생하지 못했어요. 기기 음성 설정을 확인해 주세요.');
+  }
+}
+function testSpeech(){speak('Hello. Please tap your answer.',true)}
+
+/* ── signboard */
+let BST={local:'',kr:'',rom:'',list:[],i:-1,replies:[]};
+function openBoard(local,kr,rom,list,i,isSos,replies){
+  BST={local,kr,rom:rom||'',list:list||[],i:i===undefined?-1:i,replies:replies||[]};
+  $('bLocal').textContent=local;
+  $('bKr').textContent=kr||'';
+  $('bRom').textContent=(cfg.rom&&rom)?rom:'';
+  $('bReply').classList.remove('on');
+  $('board').classList.toggle('sos',!!isSos);
+  $('bRep').innerHTML=BST.replies.map((r,j)=>`<button class="loc" lang="en" onclick="reply(${j})">${esc(r.local)}</button>`).join('');
+  $('bRep').style.display=BST.replies.length?'grid':'none';
+  $('bHint').hidden=!BST.replies.length;
+  $('bInput').classList.remove('on');$('bInput').innerHTML='';
+  const multi=BST.i>=0&&BST.list.length>1;
+  $('bPrev').hidden=$('bNext').hidden=!multi;
+  $('bPos').textContent=multi?`${BST.i+1} / ${BST.list.length}`:'';
+  if(!$('board').classList.contains('on'))lastFocus=document.activeElement;
+  $('board').classList.add('on');
+  document.body.style.overflow='hidden';
+  requestAnimationFrame(()=>{const b=$('board').querySelector('.bt button');if(b)b.focus()});
+}
+function openPhrase(id,list){
+  const p=byId[id];if(!p)return;
+  recent=[id,...recent.filter(x=>x!==id)].slice(0,12);store.set('recent',recent);
+  const L=list&&list.length?list:[id];
+  openBoard(p.local,p.kr,p.roman,L,L.indexOf(id),false,contextualReplies(p));
+}
+function boardStep(d){
+  if(BST.i<0||BST.list.length<2)return;
+  const n=(BST.i+d+BST.list.length)%BST.list.length;
+  openPhrase(BST.list[n],BST.list);
+}
+const LOCAL_LANG="en";
+const IN_UI={ph:'Please type here',ok:'Confirm'};
+function inlineInput(box,done){
+  box.innerHTML=`<form class="inline-in"><input class="loc" lang="${LOCAL_LANG}" enterkeyhint="done" autocomplete="off" placeholder="${IN_UI.ph}" aria-label="답변 직접 입력"><button type="submit">${IN_UI.ok}</button></form>`;
+  box.classList.add('on');
+  const f=box.querySelector('form'),i=f.querySelector('input');
+  f.onsubmit=e=>{e.preventDefault();const v=i.value.trim();if(!v){i.focus();return}i.blur();box.classList.remove('on');done(v)};
+  i.focus();
+}
+function markPicked(box,j){box.querySelectorAll('button').forEach((b,k)=>b.setAttribute('aria-pressed',String(k===j)))}
+function showAnswer(el,main,sub){
+  el.querySelector('b').textContent=main;
+  el.querySelector('.sub').textContent=sub;
+  el.classList.add('on');
+}
+function answerWith(a,el,box){
+  if(a.input){
+    el.classList.remove('on');
+    inlineInput(box,v=>showAnswer(el,v,'직접 입력한 답변'));
+    return;
+  }
+  box.classList.remove('on');
+  showAnswer(el,a.kr,a.local);
+}
+function reply(j){
+  const r=BST.replies[j];if(!r)return;
+  markPicked($('bRep'),j);
+  answerWith(r,$('bReply'),$('bInput'));
+}
+function closeBoard(){
+  $('board').classList.remove('on');
+  document.body.style.overflow='';
+  if(lastFocus&&lastFocus.focus)lastFocus.focus();
+}
+function trapTab(e,d){
+  const f=[...d.querySelectorAll('button,input,a[href]')].filter(x=>!x.hidden&&x.offsetParent!==null);
+  if(!f.length)return;
+  const a=f[0],z=f[f.length-1];
+  if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}
+  else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}
+}
+addEventListener('keydown',e=>{
+  const sheetOn=$('sheet').classList.contains('on'),boardOn=$('board').classList.contains('on');
+  if(e.key==='Tab'&&(sheetOn||boardOn)){trapTab(e,sheetOn?$('sheet'):$('board'));return}
+  if(sheetOn&&e.key==='Escape'){closeSheet();return}
+  if(!boardOn)return;
+  if(e.key==='Escape')closeBoard();
+  if(e.target.tagName==='INPUT')return;
+  if(e.key==='ArrowRight')boardStep(1);
+  if(e.key==='ArrowLeft')boardStep(-1);
+});
+
+/* ── favorites */
+function toggleFav(e,id){e.stopPropagation();favs.has(id)?favs.delete(id):favs.add(id);store.set('favs',[...favs]);render()}
+
+/* ── rendering pieces */
+function cardHTML(p,listJson){
+  return `<div class="pc${favs.has(p.id)?' fav':''}">
+    <span class="bar"></span>
+    <button class="body" onclick='openPhrase("${p.id}",${listJson})'>
+      <span class="kr">${esc(p.kr)}</span>
+      <span class="local loc" lang="en">${esc(p.local)}</span>
+      ${cfg.rom&&p.roman?`<span class="rom">${esc(p.roman)}</span>`:''}
+    </button>
+    <div class="side">
+      <button onclick='event.stopPropagation();speak(${attr(p.local)})' aria-label="읽어주기">🔊</button>
+      <button class="${favs.has(p.id)?'on':''}" onclick="toggleFav(event,'${p.id}')" aria-label="즐겨찾기">${favs.has(p.id)?'★':'☆'}</button>
+    </div>
+  </div>`;
+}
+function listHTML(items){
+  if(!items.length)return '';
+  const ids=JSON.stringify(items.map(p=>p.id)).replace(/"/g,'&quot;');
+  return `<div class="list">${items.map(p=>cardHTML(p,ids)).join('')}</div>`;
+}
+function head(t){return `<div class="sect"><i></i><h2>${esc(t)}</h2></div>`}
+
+/* ── tabs */
+const CATS=['전체','최근',...new Set(PHRASES.map(p=>p.cat))];
+
+function viewPhrases(){
+  let html=`<div class="searchbar">
+    <div class="sb-row"><input id="q" enterkeyhint="search" autocomplete="off" aria-label="문장 찾기" placeholder="찾기: 화장실, 계산, 아파요, 몇 시…" value="${esc(query)}" oninput="onQuery(this.value)"><button type="button" class="qclear" id="qclear" aria-label="검색어 지우기" onclick="clearQuery()"${query?'':' hidden'}>✕</button></div>
+    <div class="chips" id="chips">${CATS.map(c=>`<button class="chip" aria-pressed="${c===cat}" onclick="cat='${c}';render()">${esc(c)}</button>`).join('')}</div>
+  </div>`;
+  return html+`<div id="results">${phraseResults()}</div>`;
+}
+function phraseResults(){
+  let html='';
+  if(cat==='전체'&&!query.trim()){
+    const quickRecent=recent.slice(0,3).map(id=>byId[id]).filter(Boolean);
+    if(quickRecent.length){
+      const quickIds=quickRecent.map(p=>p.id);
+      html+=`<div class="quick-block"><div class="quick-title">방금 쓴 문장</div><div class="quick-recent">${quickRecent.map(p=>`<button type="button" onclick='openPhrase("${p.id}",${JSON.stringify(quickIds)})'><span class="local loc" lang="en">${esc(p.local)}</span><span class="kr">${esc(p.kr)}</span></button>`).join('')}</div></div>`;
+    }
+    html+=`<div class="quick-block"><div class="quick-title">지금 어떤 상황인가요?</div><div class="scene-shortcuts">${SCENES.slice(0,6).map((s,i)=>`<button type="button" onclick="openScene(${i})"><span>${s.icon}</span>${esc(s.title)}</button>`).join('')}</div></div>`;
+  }
+  let items;
+  if(cat==='최근'){items=recent.map(id=>byId[id]).filter(Boolean)}
+  else{items=PHRASES.filter(p=>cat==='전체'||p.cat===cat)}
+  if(query.trim()){
+    const q=query.trim().toLowerCase();
+    items=items.filter(p=>(p.kr+' '+p.local+' '+(p.roman||'')+' '+p.cat).toLowerCase().includes(q));
+  }
+  if(query.trim()&&items.length)html+=`<div class="rcount">${items.length}개 문장</div>`;
+  if(!items.length){
+    html+=`<div class="empty"><b>${cat==='최근'?'아직 사용한 문장이 없어요':'찾는 문장이 없어요'}</b>${cat==='최근'?'문장을 한 번 열어보면 여기 쌓입니다.':'다른 단어로 찾아보거나 위 분류를 눌러보세요.'}</div>`;
+  }else{
+    html+=listHTML(items);
+  }
+  return html;
+}
+
+function onQuery(v){
+  query=v;
+  $('qclear').hidden=!v;
+  $('results').innerHTML=phraseResults();
+}
+function clearQuery(){
+  const q=$('q');
+  q.value='';onQuery('');q.focus();
+}
+
+function openScene(i){
+  sceneOpen=i;
+  tab='scenes';query='';
+  render();
+  requestAnimationFrame(()=>{const el=document.querySelector('[data-scene-index="'+i+'"]');if(el)el.scrollIntoView({block:'start'})});
+}
+function viewScenes(){
+  let html=`<div class="note"><b>순서대로 따라가면 끝납니다</b>상황을 열고 위에서부터 하나씩 보여주세요. 문장을 누르면 화면 가득 커집니다.</div>`;
+  SCENES.forEach((s,i)=>{
+    const ids=JSON.stringify(s.ids).replace(/"/g,'&quot;');
+    html+=`<details class="scene"${i===sceneOpen?' open':''} data-scene-index="${i}">
+      <summary><span class="em">${s.icon}</span>${esc(s.title)}<span class="cnt">${s.ids.length}단계</span></summary>
+      <div class="steps">${s.ids.map((id,j)=>{const p=byId[id];if(!p)return '';
+        return `<button class="step" onclick='openPhrase("${id}",${ids})'>
+          <span class="n">${j+1}</span>
+          <span><span class="local loc" lang="en">${esc(p.local)}</span><span class="kr" style="display:block">${esc(p.kr)}</span></span>
+        </button>`}).join('')}</div>
+    </details>`;
+  });
+  return html;
+}
+
+function viewShow(){
+  let html=`<div class="note"><b>입력한 내용을 그대로 크게 보여줍니다</b>주소·호텔명·사람 이름·예약번호·문장·현지어·숫자 등 무엇이든 적을 수 있어요.</div>`;
+  html+=head('직접 입력해서 보여주기');
+  html+=`<textarea class="big-input" id="pen" inputmode="text" autocomplete="off" autocapitalize="none" placeholder="예: Hotel / 18:30 / Main Station / 예약번호 A1234"></textarea>
+  <button type="button" class="wide" onclick="showPen(event)">입력한 내용 크게 보여주기</button>
+  <details class="padwrap"><summary>숫자 패드 (시간·금액 입력용)</summary>
+  <div class="pad">${['1','2','3','4','5','6','7','8','9',':','0','←'].map(k=>`<button type="button" onclick="pad('${k}')" aria-label="${k==='←'?'한 글자 지우기':k}">${k}</button>`).join('')}</div></details>`;
+  html+=head('상대가 눌러서 답하기');
+  CHOICES.forEach((c,i)=>{
+    html+=`<div class="q">
+      <div class="qhead">
+        <button type="button" class="qshow" onclick="openChoiceBoard(${i})">
+          <div class="ql loc" lang="en">${esc(c.localQ)}</div>
+          <div class="qk">${esc(c.krQ)}</div>
+          <span class="qhint">↗ 질문 크게 보여주기</span>
+        </button>
+      </div>
+      <div class="opts" id="o${i}">${c.answers.map((a,j)=>`<button type="button" class="loc" lang="en" aria-pressed="false" onclick="pick(${i},${j})"><span class="optlocal">${esc(a.local)}</span><span class="optkr">${esc(a.kr||'직접 입력')}</span></button>`).join('')}</div>
+      <div class="inbox" id="in${i}"></div>
+      <div class="ans" id="a${i}" role="status" aria-live="polite"><b></b><span class="sub"></span></div>
+    </div>`;
+  });
+  return html;
+}
+function pad(k){
+  const el=$('pen');if(!el)return;
+  el.value = k==='←' ? el.value.slice(0,-1) : el.value+k;
+}
+function showPen(e){
+  if(e)e.preventDefault();
+  const el=$('pen');
+  if(!el)return;
+  const v=(el.value||'').trim();
+  if(!v){
+    el.focus();
+    return;
+  }
+  try{el.blur()}catch(_){}
+  openBoard(v,'','',[],-1,false,[]);
+}
+function openChoiceBoard(i){
+  const q=CHOICES[i];
+  if(!q)return;
+  openBoard(q.localQ,q.krQ,'',[],-1,false,q.answers);
+}
+function pick(i,j){
+  const a=CHOICES[i]&&CHOICES[i].answers[j];if(!a)return;
+  markPicked($('o'+i),j);
+  answerWith(a,$('a'+i),$('in'+i));
+}
+
+function viewFav(){
+  const items=PHRASES.filter(p=>favs.has(p.id));
+  if(!items.length)return `<div class="empty"><b>즐겨찾기가 비어 있어요</b>문장 오른쪽의 ☆를 누르면 여기에 모입니다.<br>출발 전에 자주 쓸 것만 골라두면 현장에서 훨씬 빨라요.</div>`;
+  let html=`<div class="note"><b>${items.length}개 저장됨</b>이 목록은 이 기기에 남아 있어서 비행기 모드에서도 열립니다.</div>`;
+  const cats=[...new Set(items.map(p=>p.cat))];
+  cats.forEach(c=>{html+=head(c)+listHTML(items.filter(p=>p.cat===c))});
+  return html;
+}
+
+function viewSos(){
+  let html=`<div class="note" style="border-left-color:#d92b2b"><b>누르면 화면 전체가 빨갛게 바뀝니다</b>말이 나오지 않는 상황에서 그대로 상대에게 보여주세요.</div>`;
+  html+=head('바로 보여줄 카드');
+  SOSCARD.forEach((c,i)=>{
+    html+=`<button class="sosbtn" onclick="openBoard(${attr(c.local)},${attr(c.kr)},'',[],-1,true)">
+      <span class="local loc" lang="en">${esc(c.local)}</span><span class="kr">${esc(c.kr)}</span></button>`;
+  });
+  html+=head('전화 걸기');
+  html+=`<div class="verified">긴급 연락처 확인: 2026-10-03 · <a href="https://www.triplezero.gov.au/" target="_blank" rel="noopener">공식 안내</a></div>`;
+  html+=`<div class="sos-grid">${SOSNUM.map(n=>`<a class="tel" href="tel:${n.num.replace(/[^0-9+]/g,'')}">
+    <div class="num">${esc(n.num)}</div><div class="lb">${esc(n.label)}</div><div class="ds">${esc(n.desc)}</div></a>`).join('')}</div>`;
+  return html;
+}
+
+const TABS=[
+  ['phrases','💬','문장',viewPhrases],
+  ['scenes','🧭','상황',viewScenes],
+  ['show','📢','보여주기',viewShow],
+  ['favs','★','즐겨찾기',viewFav],
+  ['sos','🆘','긴급',viewSos],
+];
+
+function render(keepFocus){
+  const t=TABS.find(x=>x[0]===tab);
+  $('main').innerHTML=t[3]();
+  $('nav').innerHTML=TABS.map(x=>`<button aria-selected="${x[0]===tab}" onclick="setTab('${x[0]}')"><span class="ic">${x[1]}</span>${x[2]}</button>`).join('');
+  if(keepFocus&&$('q')){const el=$('q');el.focus();el.setSelectionRange(el.value.length,el.value.length)}
+  const ch=$('chips');
+  if(ch){const on=ch.querySelector('[aria-pressed="true"]');if(on&&!keepFocus&&on.scrollIntoView)on.scrollIntoView({block:'nearest',inline:'center'})}
+}
+function setTab(t){tab=t;query='';try{scrollTo(0,0)}catch(e){}render()}
+
+matchMedia('(prefers-color-scheme:dark)').addEventListener?.('change',()=>{if(cfg.theme==='auto')applyCfg()});
+function setupOffline(){
+  const el=$('offlineStatus');
+  if(!('serviceWorker' in navigator)){
+    if(el)el.textContent='오프라인 자동 저장 미지원';
+    return;
+  }
+  navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'})
+    .then(()=>navigator.serviceWorker.ready)
+    .then(()=>{if(el)el.textContent='✓ 오프라인 사용 준비 완료'})
+    .catch(()=>{if(el)el.textContent='오프라인 준비 실패 · 인터넷 연결 후 다시 열어주세요'});
+}
+(function(){
+  const m=document.querySelector('#board .mid');let sx=0,sy=0;
+  m.addEventListener('touchstart',e=>{const t=e.touches[0];sx=t.clientX;sy=t.clientY},{passive:true});
+  m.addEventListener('touchend',e=>{const t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy;
+    if(Math.abs(dx)>60&&Math.abs(dy)<50)boardStep(dx<0?1:-1)},{passive:true});
+})();
+setupOffline();
+applyCfg();render();
+</script></body></html>
