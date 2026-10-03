@@ -181,6 +181,38 @@ html[data-theme="dark"] .navin button[aria-selected="true"]{color:var(--signal);
 #toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:130;max-width:min(92vw,560px);background:var(--ink);color:var(--bg);padding:10px 13px;border-radius:3px;font-size:.78rem;font-weight:700;display:none;box-shadow:0 6px 24px rgba(0,0,0,.22)}
 #toast.on{display:block}
 
+/* ── v3 UI */
+.sb-row{position:relative}
+.searchbar input{padding-right:48px}
+.qclear{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:42px;height:42px;border-radius:3px;color:var(--sub);font-size:1rem;display:grid;place-items:center}
+.qclear[hidden]{display:none}
+.rcount{font-size:.74rem;font-weight:700;color:var(--sub);margin:0 0 8px}
+.pc>.body:active,.quick-recent button:active,.scene-shortcuts button:active,.sosbtn:active{background:var(--bg)}
+#board .bt button[hidden]{display:none}
+#board .bt .pos{font-size:.82rem;font-weight:800;opacity:.8;min-width:48px;text-align:center;font-variant-numeric:tabular-nums}
+#board .rep-hint{text-align:center;font-size:1rem;font-weight:800;padding:4px 12px 0;opacity:.95}
+#board .rep-hint[hidden]{display:none}
+#board .rep button[aria-pressed="true"]{background:var(--signal);color:#111;box-shadow:inset 0 0 0 3px #111}
+#bReply .cap{display:block;font-size:.72rem;font-weight:800;color:#666;margin:0 0 4px;letter-spacing:.02em}
+.inline-in{display:flex;gap:7px}
+.inline-in input{flex:1;min-width:0;border:2px solid var(--accent);border-radius:3px;padding:13px;font-size:1.1rem;font-weight:700;background:var(--panel);outline:none}
+.inline-in button{flex:none;background:var(--accent);color:#fff;border-radius:3px;padding:0 18px;font-weight:800}
+#bInput{display:none;margin:0 12px 10px}
+#bInput.on{display:block}
+#bInput .inline-in input{background:#fff;color:#111;border-color:#fff}
+#bInput .inline-in button{background:var(--signal);color:#111}
+.q .inbox{display:none;padding:0 9px 9px}
+.q .inbox.on{display:block}
+.q .opts button[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.q .opts button[aria-pressed="true"] .optkr{color:rgba(255,255,255,.82)}
+.padwrap{margin-top:9px}
+.padwrap>summary{list-style:none;cursor:pointer;font-size:.8rem;font-weight:700;color:var(--sub);padding:6px 2px}
+.padwrap>summary::-webkit-details-marker{display:none}
+.padwrap>summary::before{content:'＋ '}
+.padwrap[open]>summary::before{content:'－ '}
+.padwrap .pad{margin-top:4px}
+.padwrap .pad button{height:48px}
+
 @media(min-width:640px){
   .list{grid-template-columns:1fr 1fr}
   .q .opts{grid-template-columns:repeat(3,1fr)}
@@ -209,8 +241,9 @@ html[data-theme="dark"] .navin button[aria-selected="true"]{color:var(--signal);
   <div class="bt">
     <button onclick="closeBoard()" aria-label="닫기">✕</button>
     <span class="sp"></span>
-    <button onclick="boardStep(-1)" aria-label="이전">‹</button>
-    <button onclick="boardStep(1)" aria-label="다음">›</button>
+    <button id="bPrev" onclick="boardStep(-1)" aria-label="이전 문장">‹</button>
+    <span id="bPos" class="pos" aria-live="polite"></span>
+    <button id="bNext" onclick="boardStep(1)" aria-label="다음 문장">›</button>
     <button onclick="speak(BST.local)" aria-label="읽어주기">🔊</button>
   </div>
   <div class="mid">
@@ -218,7 +251,9 @@ html[data-theme="dark"] .navin button[aria-selected="true"]{color:var(--signal);
     <div id="bKr"></div>
     <div id="bRom"></div>
   </div>
-  <div id="bReply"><b></b><span></span></div>
+  <div id="bReply" role="status" aria-live="polite"><span class="cap">상대방의 답</span><b></b><span class="sub"></span></div>
+  <div id="bInput"></div>
+  <div id="bHint" class="rep-hint loc" lang="ja" hidden>↓ 当てはまるものを押してください</div>
   <div class="rep" id="bRep"></div>
 </div>
 
@@ -339,7 +374,12 @@ function openBoard(local,kr,rom,list,i,isSos,replies){
   $('board').classList.toggle('sos',!!isSos);
   $('bRep').innerHTML=BST.replies.map((r,j)=>`<button class="loc" lang="ja" onclick="reply(${j})">${esc(r.local)}</button>`).join('');
   $('bRep').style.display=BST.replies.length?'grid':'none';
-  lastFocus=document.activeElement;
+  $('bHint').hidden=!BST.replies.length;
+  $('bInput').classList.remove('on');$('bInput').innerHTML='';
+  const multi=BST.i>=0&&BST.list.length>1;
+  $('bPrev').hidden=$('bNext').hidden=!multi;
+  $('bPos').textContent=multi?`${BST.i+1} / ${BST.list.length}`:'';
+  if(!$('board').classList.contains('on'))lastFocus=document.activeElement;
   $('board').classList.add('on');
   document.body.style.overflow='hidden';
   requestAnimationFrame(()=>{const b=$('board').querySelector('.bt button');if(b)b.focus()});
@@ -355,37 +395,54 @@ function boardStep(d){
   const n=(BST.i+d+BST.list.length)%BST.list.length;
   openPhrase(BST.list[n],BST.list);
 }
-function askDirectInput(done){
-  const msg=LANG.startsWith('ja')?'答えを入力してください':'请输入答案';
-  const v=window.prompt(msg,'');
-  if(v===null)return;
-  const t=v.trim();
-  if(!t)return;
-  done(t);
+const LOCAL_LANG="ja";
+const IN_UI=LOCAL_LANG==='ja'?{ph:'ここに入力してください',ok:'決定'}:{ph:'请在这里输入',ok:'确定'};
+function inlineInput(box,done){
+  box.innerHTML=`<form class="inline-in"><input class="loc" lang="${LOCAL_LANG}" enterkeyhint="done" autocomplete="off" placeholder="${IN_UI.ph}" aria-label="답변 직접 입력"><button type="submit">${IN_UI.ok}</button></form>`;
+  box.classList.add('on');
+  const f=box.querySelector('form'),i=f.querySelector('input');
+  f.onsubmit=e=>{e.preventDefault();const v=i.value.trim();if(!v){i.focus();return}i.blur();box.classList.remove('on');done(v)};
+  i.focus();
 }
-function reply(j){
-  const r=BST.replies[j],el=$('bReply');if(!r)return;
-  if(r.input){
-    askDirectInput(v=>{
-      el.querySelector('b').textContent=v;
-      el.querySelector('span').textContent='직접 입력한 답변';
-      el.classList.add('on');
-    });
+function markPicked(box,j){box.querySelectorAll('button').forEach((b,k)=>b.setAttribute('aria-pressed',String(k===j)))}
+function showAnswer(el,main,sub){
+  el.querySelector('b').textContent=main;
+  el.querySelector('.sub').textContent=sub;
+  el.classList.add('on');
+}
+function answerWith(a,el,box){
+  if(a.input){
+    el.classList.remove('on');
+    inlineInput(box,v=>showAnswer(el,v,'직접 입력한 답변'));
     return;
   }
-  el.querySelector('b').textContent=r.kr;
-  el.querySelector('span').textContent=r.local;
-  el.classList.add('on');
+  box.classList.remove('on');
+  showAnswer(el,a.kr,a.local);
+}
+function reply(j){
+  const r=BST.replies[j];if(!r)return;
+  markPicked($('bRep'),j);
+  answerWith(r,$('bReply'),$('bInput'));
 }
 function closeBoard(){
   $('board').classList.remove('on');
   document.body.style.overflow='';
   if(lastFocus&&lastFocus.focus)lastFocus.focus();
 }
+function trapTab(e,d){
+  const f=[...d.querySelectorAll('button,input,a[href]')].filter(x=>!x.hidden&&x.offsetParent!==null);
+  if(!f.length)return;
+  const a=f[0],z=f[f.length-1];
+  if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}
+  else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}
+}
 addEventListener('keydown',e=>{
-  if($('sheet').classList.contains('on')&&e.key==='Escape'){closeSheet();return}
-  if(!$('board').classList.contains('on'))return;
+  const sheetOn=$('sheet').classList.contains('on'),boardOn=$('board').classList.contains('on');
+  if(e.key==='Tab'&&(sheetOn||boardOn)){trapTab(e,sheetOn?$('sheet'):$('board'));return}
+  if(sheetOn&&e.key==='Escape'){closeSheet();return}
+  if(!boardOn)return;
   if(e.key==='Escape')closeBoard();
+  if(e.target.tagName==='INPUT')return;
   if(e.key==='ArrowRight')boardStep(1);
   if(e.key==='ArrowLeft')boardStep(-1);
 });
@@ -420,9 +477,13 @@ const CATS=['전체','최근',...new Set(PHRASES.map(p=>p.cat))];
 
 function viewPhrases(){
   let html=`<div class="searchbar">
-    <input id="q" placeholder="찾기: 화장실, 계산, 아파요, 몇 시…" value="${esc(query)}" oninput="query=this.value;render(true)">
+    <div class="sb-row"><input id="q" enterkeyhint="search" autocomplete="off" aria-label="문장 찾기" placeholder="찾기: 화장실, 계산, 아파요, 몇 시…" value="${esc(query)}" oninput="onQuery(this.value)"><button type="button" class="qclear" id="qclear" aria-label="검색어 지우기" onclick="clearQuery()"${query?'':' hidden'}>✕</button></div>
     <div class="chips" id="chips">${CATS.map(c=>`<button class="chip" aria-pressed="${c===cat}" onclick="cat='${c}';render()">${esc(c)}</button>`).join('')}</div>
   </div>`;
+  return html+`<div id="results">${phraseResults()}</div>`;
+}
+function phraseResults(){
+  let html='';
   if(cat==='전체'&&!query.trim()){
     const quickRecent=recent.slice(0,3).map(id=>byId[id]).filter(Boolean);
     if(quickRecent.length){
@@ -438,12 +499,23 @@ function viewPhrases(){
     const q=query.trim().toLowerCase();
     items=items.filter(p=>(p.kr+' '+p.local+' '+(p.roman||'')+' '+p.cat).toLowerCase().includes(q));
   }
+  if(query.trim()&&items.length)html+=`<div class="rcount">${items.length}개 문장</div>`;
   if(!items.length){
     html+=`<div class="empty"><b>${cat==='최근'?'아직 사용한 문장이 없어요':'찾는 문장이 없어요'}</b>${cat==='최근'?'문장을 한 번 열어보면 여기 쌓입니다.':'다른 단어로 찾아보거나 위 분류를 눌러보세요.'}</div>`;
   }else{
     html+=listHTML(items);
   }
   return html;
+}
+
+function onQuery(v){
+  query=v;
+  $('qclear').hidden=!v;
+  $('results').innerHTML=phraseResults();
+}
+function clearQuery(){
+  const q=$('q');
+  q.value='';onQuery('');q.focus();
 }
 
 function openScene(i){
@@ -472,9 +544,9 @@ function viewShow(){
   let html=`<div class="note"><b>입력한 내용을 그대로 크게 보여줍니다</b>주소·호텔명·사람 이름·예약번호·문장·현지어·숫자 등 무엇이든 적을 수 있어요.</div>`;
   html+=head('직접 입력해서 보여주기');
   html+=`<textarea class="big-input" id="pen" inputmode="text" autocomplete="off" autocapitalize="none" placeholder="예: Hilton Tokyo / 18:30 / 新宿駅 / 예약번호 A1234"></textarea>
-  <div class="pad">${['1','2','3','4','5','6','7','8','9',':','0','←'].map(k=>`<button type="button" onclick="pad('${k}')">${k}</button>`).join('')}</div>
-  <div class="note" style="margin-top:8px"><b>숫자 패드는 선택 사항</b>위 입력칸에는 휴대폰 키보드로 일반 글자도 자유롭게 입력할 수 있습니다.</div>
-  <button type="button" class="wide" onclick="showPen(event)">입력한 내용 크게 보여주기</button>`;
+  <button type="button" class="wide" onclick="showPen(event)">입력한 내용 크게 보여주기</button>
+  <details class="padwrap"><summary>숫자 패드 (시간·금액 입력용)</summary>
+  <div class="pad">${['1','2','3','4','5','6','7','8','9',':','0','←'].map(k=>`<button type="button" onclick="pad('${k}')" aria-label="${k==='←'?'한 글자 지우기':k}">${k}</button>`).join('')}</div></details>`;
   html+=head('상대가 눌러서 답하기');
   CHOICES.forEach((c,i)=>{
     html+=`<div class="q">
@@ -485,8 +557,9 @@ function viewShow(){
           <span class="qhint">↗ 질문 크게 보여주기</span>
         </button>
       </div>
-      <div class="opts">${c.answers.map((a,j)=>`<button type="button" class="loc" lang="ja" onclick="pick(${i},${j})"><span class="optlocal">${esc(a.local)}</span><span class="optkr">${esc(a.kr||'직접 입력')}</span></button>`).join('')}</div>
-      <div class="ans" id="a${i}"><b></b><span></span></div>
+      <div class="opts" id="o${i}">${c.answers.map((a,j)=>`<button type="button" class="loc" lang="ja" aria-pressed="false" onclick="pick(${i},${j})"><span class="optlocal">${esc(a.local)}</span><span class="optkr">${esc(a.kr||'직접 입력')}</span></button>`).join('')}</div>
+      <div class="inbox" id="in${i}"></div>
+      <div class="ans" id="a${i}" role="status" aria-live="polite"><b></b><span class="sub"></span></div>
     </div>`;
   });
   return html;
@@ -505,18 +578,7 @@ function showPen(e){
     return;
   }
   try{el.blur()}catch(_){}
-  BST={local:v,kr:'',rom:'',list:[],i:-1,replies:[]};
-  $('bLocal').textContent=v;
-  $('bKr').textContent='';
-  $('bRom').textContent='';
-  $('bReply').classList.remove('on');
-  $('bRep').innerHTML='';
-  $('bRep').style.display='none';
-  $('board').classList.remove('sos');
-  lastFocus=document.activeElement;
-  $('board').classList.add('on');
-  document.body.style.overflow='hidden';
-  requestAnimationFrame(()=>{const b=$('board').querySelector('.bt button');if(b)b.focus()});
+  openBoard(v,'','',[],-1,false,[]);
 }
 function openChoiceBoard(i){
   const q=CHOICES[i];
@@ -524,18 +586,9 @@ function openChoiceBoard(i){
   openBoard(q.localQ,q.krQ,'',[],-1,false,q.answers);
 }
 function pick(i,j){
-  const a=CHOICES[i].answers[j],el=$('a'+i);if(!a)return;
-  if(a.input){
-    askDirectInput(v=>{
-      el.querySelector('b').textContent=v;
-      el.querySelector('span').textContent='직접 입력한 답변';
-      el.classList.add('on');
-    });
-    return;
-  }
-  el.querySelector('b').textContent=a.kr;
-  el.querySelector('span').textContent=a.local;
-  el.classList.add('on');
+  const a=CHOICES[i]&&CHOICES[i].answers[j];if(!a)return;
+  markPicked($('o'+i),j);
+  answerWith(a,$('a'+i),$('in'+i));
 }
 
 function viewFav(){
@@ -591,6 +644,12 @@ function setupOffline(){
     .then(()=>{if(el)el.textContent='✓ 오프라인 사용 준비 완료'})
     .catch(()=>{if(el)el.textContent='오프라인 준비 실패 · 인터넷 연결 후 다시 열어주세요'});
 }
+(function(){
+  const m=document.querySelector('#board .mid');let sx=0,sy=0;
+  m.addEventListener('touchstart',e=>{const t=e.touches[0];sx=t.clientX;sy=t.clientY},{passive:true});
+  m.addEventListener('touchend',e=>{const t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy;
+    if(Math.abs(dx)>60&&Math.abs(dy)<50)boardStep(dx<0?1:-1)},{passive:true});
+})();
 setupOffline();
 applyCfg();render();
 </script></body></html>
